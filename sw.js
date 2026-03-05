@@ -1,11 +1,11 @@
-const CACHE_NAME = 'en-v2';
+const CACHE_NAME = 'en-v3';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
+  './logo-header.png',
+  './logo-header.png',
   'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js'
 ];

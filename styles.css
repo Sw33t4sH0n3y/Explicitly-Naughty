@@ -20,13 +20,26 @@
     --glass-border: rgba(255,255,255,0.08);
     --radius: 14px;
   }
-  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  * { 
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+  }
   body {
-    font-family:'Quicksand',sans-serif; background:var(--bg-deep);
-    color:var(--blush); min-height:100dvh; overflow-x:hidden; position:relative;
+    font-family:'Quicksand',sans-serif; 
+    background:var(--bg-deep);
+    color:var(--blush); 
+    min-height:100dvh; 
+    overflow-x:hidden; 
+    position:relative;
   }
   body::before {
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    content: ''; 
+    position: fixed; 
+    inset: 0; 
+    pointer-events: none; 
+    z-index: 0;
     background:
       radial-gradient(ellipse at 15% 30%,rgba(255,92,138,0.12) 0%,transparent 50%),
       radial-gradient(ellipse at 85% 15%,rgba(255,123,66,0.1) 0%,transparent 45%),
@@ -34,15 +47,25 @@
       radial-gradient(ellipse at 60% 50%,rgba(255,202,40,0.05) 0%,transparent 35%);
   }
   .container {
-    position:relative; z-index:1; max-width:480px; margin:0 auto; padding:16px;
-    min-height:100dvh; display:flex; flex-direction:column;
+    position: relative; 
+    z-index: 1; 
+    max-width: 480px; 
+    margin: 0 auto; 
+    padding: 16px;
+    min-height: 100dvh; 
+    display: flex; 
+    flex-direction: column;
   }
-  .game-header { text-align:center; padding:12px 0 8px; }
-  .game-title {
-    font-family:'Playfair Display',serif; font-size:clamp(1.8rem,7vw,2.6rem); font-style:italic;
-    background:linear-gradient(135deg,var(--rose),var(--ember),var(--honey));
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-    letter-spacing:1px; line-height:1.2; filter:drop-shadow(0 0 28px var(--glow-rose));
+  .game-header { 
+    text-align: center; 
+    padding: 8px 0 4px; 
+  }
+  .game-logo {
+    width: clamp(120px 40 vw, 180px);
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 0 20px var(--glow-rose));
   }
   .game-subtitle { font-size:0.75rem; color:var(--muted); letter-spacing:3px; text-transform:uppercase; margin-top:2px; }
 

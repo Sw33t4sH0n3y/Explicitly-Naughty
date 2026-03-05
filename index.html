@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#0D0614">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Naughty">
 <meta name="description" content="A couples matching game — match it, act it out.">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="logo-header.png">
 <title>Explicitly Naughty</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
@@ -18,7 +18,7 @@
 <body>
 <div class="container">
   <header class="game-header">
-    <div class="game-title">Explicitly Naughty</div>
+    <img src="logo-header.png" alt="Explicitly Naughty" class="game-logo">
     <div class="game-subtitle">Match it. Act it out.</div>
   </header>
 
@@ -222,7 +222,7 @@
       <div style="font-size:2rem;margin-bottom:6px;">🔐</div>
       <div class="pw-title">Encrypt Your Export</div>
       <div class="pw-sub">Set a password to protect your PDF. Only someone with this password can open it.</div>
-      <input type="password" class="pw-input" id="pw-input" placeholder="Enter password" autocomplete="off" minlength="4">
+      <input type="text" class="pw-input" id="pw-input" placeholder="Enter password" autocomplete="off" minlength="4" style="-webkit-text-security:disc;">
       <div class="pw-hint">Minimum 4 characters — choose something memorable</div>
       <div class="pw-actions">
         <button class="btn-pw-go" id="btn-pw-go" disabled>Export 🔒</button>
@@ -610,7 +610,7 @@ function checkDobComplete() {
         if(m && d && y) clearInterval(ageInterval);
 }
 
-[dobMonth, dobDay, dob].forEach(s => s.addEventListener('change', checkDobComplete));
+[dobMonth, dobDay, dobYear].forEach(s => s.addEventListener('change', checkDobComplete));
 
 // Start timer when first select is touched
 let ageTimerStarted = false;
@@ -670,7 +670,7 @@ const btnToLevel = document.querySelector('#btn-to-level');
       document.querySelectorAll('#player-count-options .setup-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           document.querySelectorAll('#player-count-options .setup-btn').forEach(b => b.classList.remove('selected'));
-          btn.classListadd('selected');
+          btn.classList.add('selected');
           selectedCount = parseInt(btn.dataset.count);
           btnToLevel.disabled = false;
         });
@@ -893,8 +893,8 @@ const checkinPre = document.querySelector('#checkin-pre'),
       checkinPost = document.querySelector('#checkin-post'),
       checkinPreQ = document.querySelector('#checkin-pre-q'),
       checkinPostQ = document.querySelector('#checkin-post-q'),
-      btnCheckinPreNext = document.querySelector('#checkin-pre-next'),
-      btnCheckinPostNext = document.querySelector('#checkin-post-next');
+      btnCheckinPreNext = document.querySelector('#btn-checkin-pre-next'),
+      btnCheckinPostNext = document.querySelector('#btn-checkin-post-next');
   btnStartGame.addEventListener('click', () => {
   if(selectedLevel < 0) return;
   state.numPlayers = selectedCount;
@@ -910,7 +910,7 @@ const checkinPre = document.querySelector('#checkin-pre'),
 });
 
 btnCheckinPreNext.addEventListener('click', () => {
-  const sel = document.querySelector('#checkin-pre-scale .checkin-btn-selected');
+  const sel = document.querySelector('#checkin-pre-scale  .checkin-btn.selected');
   state._preQ = checkinPreQ.textContent;
   state._preRating = sel?parseInt(sel.dataset.val): 0;
   checkinPre.classList.remove('visible');
@@ -1014,488 +1014,783 @@ function shuffle(a) {
 
 function buildBoard() {
   boardEl.innerHTML = '';
-  state.deck.forEach((item,idx)=>{
-    const c=document.createElement('div');
-    let cls='card';
-    if(item.isWild) cls+=' wild-card';
-    if(item.isVuln) cls+=' vuln-card';
-    c.className=cls; c.dataset.index=idx; c.dataset.pairName=item.pairName;
-    if(item.isWild) c.dataset.wild='true';
-    if(item.isVuln) c.dataset.vuln='true';
-    c.setAttribute('tabindex','0');c.setAttribute('role','button');c.setAttribute('aria-label','Hidden card');
+  state.deck.forEach((item, idx) => {
+    const c = document.createElement('div');
+    let cls = 'card';
+    if(item.isWild) cls +=' wild-card';
+    if(item.isVuln) cls +=' vuln-card';
+    c.className =cls; 
+    c.dataset.index = idx; 
+    c.dataset.pairName = item.pairName;
+    if(item.isWild) c.dataset.wild = 'true';
+    if(item.isVuln) c.dataset.vuln = 'true';
+    c.setAttribute('tabindex', '0');
+    c.setAttribute('role', 'button');
+    c.setAttribute('aria-label', 'Hidden card');
     c.innerHTML=`<span class="emoji">${item.emoji}</span>`;
     c.addEventListener('click',onCardTap);
-    c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onCardTap(e);}});
+    c.addEventListener('keydown',e => {
+      if(e.key === 'Enter' || e.key ===  '') {
+        e.preventDefault();
+        onCardTap(e);
+      }});
     boardEl.appendChild(c);
   });
 }
-function buildPlayerScores(){
-  playerScoresEl.innerHTML='';
-  for(let i=0;i<state.numPlayers;i++){const t=document.createElement('div');t.className=`player-tag player-colors-${i}`;t.id=`player-tag-${i}`;t.textContent=`P${i+1}: ${state.scores[i]}`;playerScoresEl.appendChild(t);}
+
+function buildPlayerScores() {
+  playerScoresEl.innerHTML = '';
+  for(let i = 0; i < state.numPlayers; i++) {
+    const t = document.createElement('div');
+    t.className=`player-tag player-colors-${i}`;
+    t.id = `player-tag-${i}`;
+    t.textContent = `P${i+1}: ${state.scores[i]}`;
+    playerScores.appendChild(t);
+  }
 }
-function highlightActivePlayer(){for(let i=0;i<state.numPlayers;i++){const e=document.querySelector (`player-tag-${i}`);if(e)e.classList.toggle('active',i===state.currentPlayer);}}
-function updateScoreDisplay(){for(let i=0;i<state.numPlayers;i++){const e=document.querySelector (`player-tag-${i}`);if(e)e.textContent=`P${i+1}: ${state.scores[i]}`;}}
+function highlightActivePlayer() {
+  for(let i = 0; i < state.numPlayers; i++) {
+    const e = document.querySelector (`player-tag-${i}`);
+    if(e)e.classList.toggle('active', i === state.currentPlayer);
+  }}
+function updateScoreDisplay() { 
+  for(let i = 0; i < state.numPlayers; i++) {
+    const e = document.querySelector (`player-tag-${i}`);
+    if(e)e.textContent =`P${i+1}: ${state.scores[i]}`;
+  }}
 
 // ═══ MATCHES POPUP ═══
-function buildMatchesPopup(pairs){
-  matchesBody.innerHTML='';
-  pairs.forEach((d,i)=>{const el=document.createElement('div');el.className='match-ref-item';el.id=`mri-${i}`;
-    el.innerHTML=`<span class="match-ref-emojis">${d[0]}${d[1]}</span><span class="mri-name">${d[2]}</span>`;matchesBody.appendChild(el);});
+function buildMatchesPopup(pairs) {
+  matchesBody.innerHTML = '';
+  pairs.forEach((d, i) => {
+    const el = document.createElement('div');
+    el.className='match-ref-item';
+    el.id = `mri-${i}`;
+    el.innerHTML =`<span class="match-ref-emojis">${d[0]}${d[1]}</span><span class="mri-name">${d[2]}</span>`;
+    matchesBody.appendChild(el);
+  });
 }
-function markMatchFound(pn){
+
+function markMatchFound(pn) {
   state.foundPairs.add(pn);
-  LEVELS[state.currentLevel].pairs.forEach((d,i)=>{if(d[2]===pn){const el=document.querySelector (`mri-${i}`);
-    if(el&&!el.classList.contains('found')){el.classList.add('found');const c=document.createElement('span');c.className='mri-check';c.textContent='✓';el.appendChild(c);}}});
+  LEVELS[state.currentLevel].pairs.forEach((d, i) => {
+    if(d[2] === pn) {
+      const el = document.querySelector(`mri-${i}`);
+    if(el && !el.classList.contains('found')) {
+      el.classList.add('found');
+      const c = document.createElement('span');
+      c.className =' mri-check';
+      c.textContent = '✓';
+      el.appendChild(c);
+    }}});
 }
-matchesFab.addEventListener('click',()=>{popupOpen=!popupOpen;matchesPopup.classList.toggle('visible',popupOpen);});
-matchesClose.addEventListener('click',()=>{popupOpen=false;matchesPopup.classList.remove('visible');});
-document.addEventListener('click',e=>{if(popupOpen&&!matchesPopup.contains(e.target)&&e.target!==matchesFab){popupOpen=false;matchesPopup.classList.remove('visible');}});
+matchesFab.addEventListener('click',() => {
+  popupOpen = !popupOpen;
+  matchesPopup.classList.toggle('visible',popupOpen);
+});
+
+matchesClose.addEventListener('click',() => {
+  popupOpen=false;
+  matchesPopup.classList.remove('visible');
+});
+document.addEventListener('click', e => {
+  if(popupOpen && !matchesPopup.contains(e.target) && e.target !== matchesFab) {
+    popupOpen = false;
+    matchesPopup.classList.remove('visible');
+  }});
 
 // ═══ PAUSE ═══
-safeWordFab.addEventListener('click',()=>{if(state.gameOver)return;state.paused=true;clearInterval(state.timerInterval);pauseModal.classList.add('visible');});
-btnResume.addEventListener('click',()=>{pauseModal.classList.remove('visible');state.paused=false;
-  if(state.timerStarted&&state.timeLeft>0){state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;if(state.timeLeft<=5)timerEl.classList.add('warning');if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);}});
-btnEndEarly.addEventListener('click',()=>{pauseModal.classList.remove('visible');state.paused=false;showLevelEnd();});
+const safeWordFab = document.querySelector('#safe-word-fab');
+  safeWordFab.addEventListener('click',() => { 
+  if(state.gameOver) return;
+  state.paused = true;
+  clearInterval(state.timerInterval);
+  pauseModal.classList.add('visible');
+});
+
+btnResume.addEventListener('click', () => {
+  pauseModal.classList.remove('visible');
+  state.paused = false;
+  if(state.timerStarted && state.timeLeft > 0) {
+    state.timerInterval = setInterval(() => {
+      state.timeLeft --;
+      timer.textContent = state.timeLeft;
+      if(state.timeLeft <= 5) timerEl.classList.add('warning');
+      if(state.timeLeft <= 0) {
+        clearInterval(state.timerInterval);
+        onTimeUp();
+      }}, 1000);
+  }});
+btnEndEarly.addEventListener('click', () => {
+  pauseModal.classList.remove('visible');
+  state.paused = false;
+  showLevelEnd();
+});
 
 // ═══ CARD TAP ═══
-function onCardTap(e){
-  if(state.gameOver||state.checking||state.paused)return;
-  const card=e.currentTarget;if(card.classList.contains('flipped')||card.classList.contains('matched')||card.classList.contains('wild-used')||card.classList.contains('vuln-used'))return;
-  if(!state.timerStarted){startTimer();state.timerStarted=true;}
-  card.classList.add('flipped');card.setAttribute('aria-label',card.querySelector('.emoji').textContent);
+function onCardTap(e) {
+  if(state.gameOver || state.checking || state.paused) return;
+  const card = e.currentTarget;
+  if(card.classList.contains('flipped') || card.classList.contains('matched') || card.classList.contains('wild-used') || card.classList.contains('vuln-used')) return;
+  if(!state.timerStarted) {
+    startTimer();
+    state.timerStarted = true;
+  }
+  card.classList.add('flipped');
+  card.setAttribute('aria-label', card.querySelector('.emoji').textContent);
 
   // ── WILD CARD: trigger Memory Mode ──
-  if(card.dataset.wild==='true'){
-    state.checking=true; clearInterval(state.timerInterval);
+  if(card.dataset.wild === 'true') {
+    state.checking = true;
+    clearInterval(state.timerInterval);
     card.classList.add('wild-used');
-    phraseEl.textContent='🧠 Memory Mode!'; phraseEl.style.color='var(--electric)';
-    memoryPlayerEl.textContent=`Player ${state.currentPlayer+1} — Share a memory`;
-    const memPrompt=getMemoryPrompt();
-    memoryPromptText.textContent=memPrompt;
-    if(state.currentLevel===0) state.dateChecklist.push({emoji1:'🧠',emoji2:'',name:'Memory Mode',discovery:memPrompt});
+    phrase.textContent = '🧠 Memory Mode!'; 
+    phrase.style.color = 'var(--electric)';
+    memoryPlayerEl.textContent = `Player ${state.currentPlayer+1} — Share a memory`;
+    const memPrompt = getMemoryPrompt();
+    memoryPromptText.textContent = memPrompt;
+    if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'🧠',emoji2:'', name:'Memory Mode', discovery:memPrompt});
     memoryModal.classList.add('visible');
-    const closeMemory=()=>{
-      memoryModal.classList.remove('visible'); phraseEl.textContent='';
-      state.checking=false;
-      if(state.timerStarted&&state.timeLeft>0){
-        state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;
-          if(state.timeLeft<=5)timerEl.classList.add('warning');
-          if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);
+    const closeMemory = () => {
+      memoryModal.classList.remove('visible'); 
+      phrase.textContent =' ';
+      state.checking = false;
+      if(state.timerStarted && state.timeLeft > 0) {
+        state.timerInterval = setInterval(() => {
+        state.timeLeft --;
+        timer.textContent = state.timeLeft;
+          if(state.timeLeft <= 5)timerEl.classList.add('warning');
+          if(state.timeLeft <= 0) {
+            clearInterval(state.timerInterval);
+            onTimeUp();
+          }}, 1000);
       }
     };
-    btnMemoryDone.onclick=closeMemory;
-    btnMemorySkip.onclick=closeMemory;
+    btnMemoryDone.onclick = closeMemory;
+    btnMemorySkip.onclick = closeMemory;
     return;
   }
 
   // ── VULNERABILITY CARD: trigger Vulnerability prompt ──
-  if(card.dataset.vuln==='true'){
-    state.checking=true; clearInterval(state.timerInterval);
+  if(card.dataset.vuln === 'true') {
+    state.checking = true; 
+    clearInterval(state.timerInterval);
     card.classList.add('vuln-used');
-    phraseEl.textContent='❤️‍🩹 Vulnerability Card!'; phraseEl.style.color='var(--rose)';
-    vulnPlayerEl.textContent=`Player ${state.currentPlayer+1} — Open your heart`;
-    const vulnPrompt=getVulnPrompt();
-    vulnPromptText.textContent=vulnPrompt;
-    if(state.currentLevel===0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'',name:'Vulnerability Moment',discovery:vulnPrompt});
+    phrase.textContent = '❤️‍🩹 Vulnerability Card!'; 
+    phrase.style.color = 'var(--rose)';
+    vulnPlayer.textContent =`Player ${state.currentPlayer+1} — Open your heart`;
+    const vulnPrompt = etVulnPrompt();
+    vulnPromptText.textContent = vulnPrompt;
+    if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'', name:'Vulnerability Moment', discovery:vulnPrompt});
     vulnModal.classList.add('visible');
-    const closeVuln=()=>{
-      vulnModal.classList.remove('visible'); phraseEl.textContent='';
-      state.checking=false;
-      if(state.timerStarted&&state.timeLeft>0){
-        state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;
-          if(state.timeLeft<=5)timerEl.classList.add('warning');
-          if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);
+    const closeVuln = () => {
+      vulnModal.classList.remove('visible'); 
+      phrase.textContent = '';
+      state.checking = false;
+      if(state.timerStarted && state.timeLeft > 0) {
+        state.timerInterval = setInterval(() => {
+          state.timeLeft -- ;
+          timer.textContent = state.timeLeft;
+          if(state.timeLeft <= 5)timerEl.classList.add('warning');
+          if(state.timeLeft <= 0) {
+            clearInterval(state.timerInterval);
+            onTimeUp();
+          }}, 1000);
       }
     };
-    btnVulnDone.onclick=closeVuln;
-    btnVulnSkip.onclick=closeVuln;
+    btnVulnDone.onclick = closeVuln;
+    btnVulnSkip.onclick = closeVuln;
     return;
   }
 
-  if(!state.firstCard){state.firstCard=card;}else{state.secondCard=card;checkMatch();}
+  if(!state.firstCard) { 
+    state.firstCard = card;
+  } else { 
+    state.secondCard = card;
+    checkMatch();
+  }
 }
-function getMate(emoji){for(const d of LEVELS[state.currentLevel].pairs){if(d[0]===emoji||d[1]===emoji)return d[2];}return null;}
+function getMate(emoji) {
+  for(const d of LEVELS[state.currentLevel].pairs) {
+    if(d[0] === emoji || d[1] === emoji) return d[2];
+  }
+  return null;
+}
 
-function checkMatch(){
-  state.checking=true;clearInterval(state.timerInterval);
-  const e1=state.firstCard.querySelector('.emoji').textContent,e2=state.secondCard.querySelector('.emoji').textContent;
-  const m1=getMate(e1),m2=getMate(e2);
-  const isMatch=(m1===m2&&m1!==null&&state.firstCard!==state.secondCard);
-  if(isMatch){
-    state.firstCard.classList.add('matched');state.secondCard.classList.add('matched');
-    state.matchedPairs++;state.scores[state.currentPlayer]++;
-    matchedCountEl.textContent=state.matchedPairs;updateScoreDisplay();markMatchFound(m1);
-    popupOpen=false;matchesPopup.classList.remove('visible');
+function checkMatch() {
+  state.checking = true;
+  clearInterval(state.timerInterval);
+  const e1 = state.firstCard.querySelector('#.emoji').textContent, e2 = state.secondCard.querySelector('#.emoji').textContent;
+  const m1 = getMate(e1), m2 = getMate(e2);
+  const isMatch = (m1 === m2 && m1 !== null && state.firstCard !== state.secondCard);
+  if(isMatch) {
+    state.firstCard.classList.add('matched');
+    state.secondCard.classList.add('matched');
+    state.matchedPairs ++;
+    state.scores[state.currentPlayer]++;
+    matchedCount.textContent = state.matchedPairs;
+    updateScoreDisplay();
+    markMatchFound(m1);
+    popupOpen = false;
+    matchesPopup.classList.remove('visible');
 
     // ── DATING LEVEL: no act-it-out, build date checklist ──
-    if(state.currentLevel===0){
-      state.dateChecklist.push({emoji1:e1,emoji2:e2,name:m1,discovery:getDiscoveryPrompt()});
-      phraseEl.textContent=`✨ ${m1} added to your date!`;phraseEl.style.color='var(--honey)';
-      state.firstCard=null;state.secondCard=null;state.timerStarted=false;
-      state.checking=false;
-      setTimeout(()=>{phraseEl.textContent='';if(checkLevelEnd())return;},1200);
+    if(state.currentLevel === 0) {
+      state.dateChecklist.push({emoji1:e1, emoji2:e2, name:m1,discovery:getDiscoveryPrompt()});
+      phrase.textContent = `✨ ${m1} added to your date!`;
+      phraseEl.style.color = 'var(--honey)';
+      state.firstCard = null;
+      state.secondCard = null;
+      state.timerStarted = false;
+      state.checking = false;
+      setTimeout(() => { 
+        phraseEl.textContent = '';
+        if(checkLevelEnd())return; 
+      }, 1200);
     } else {
+
       // ── ALL OTHER LEVELS: show act-it-out modal ──
-      phraseEl.textContent=`🔥 ${m1}!`;phraseEl.style.color='var(--honey)';
-      modalEmoji.textContent=`${e1} ${e2}`;modalName.textContent=m1;
-      modalPlayer.textContent=`Player ${state.currentPlayer+1} — Your turn! 😏`;
-      discoveryText.textContent=getDiscoveryPrompt();
+      phraseEl.textContent = `🔥 ${m1}!`;
+      phraseEl.style.color = 'var(--honey)';
+      modalEmoji.textContent = `${e1} ${e2}`;
+      modalName.textContent = m1;
+      modalPlayer.textContent = `Player ${state.currentPlayer+1} — Your turn! 😏`;
+      discoveryText.textContent = getDiscoveryPrompt();
       actModal.classList.add('visible');
-      state.firstCard=null;state.secondCard=null;state.timerStarted=false;
-      const close=()=>{actModal.classList.remove('visible');phraseEl.textContent='';state.checking=false;if(checkLevelEnd())return;};
-      btnActDone.onclick=close;btnActSkip.onclick=close;
+      state.firstCard = null;state.secondCard = null;
+      state.timerStarted = false;
+      const close = () => {
+        actModal.classList.remove('visible');
+        phraseEl.textContent = '';
+        state.checking = false;
+        if(checkLevelEnd()) return;
+      };
+      btnActDone.onclick = close;
+      btnActSkip.onclick = close;
     }
   }else{
-    phraseEl.textContent='Not a match 🙈';phraseEl.style.color='var(--coral)';
-    setTimeout(()=>{
-      if(state.firstCard){state.firstCard.classList.remove('flipped');state.firstCard.setAttribute('aria-label','Hidden card');}
-      if(state.secondCard){state.secondCard.classList.remove('flipped');state.secondCard.setAttribute('aria-label','Hidden card');}
-      state.firstCard=null;state.secondCard=null;state.checking=false;state.timerStarted=false;
-      state.movesTaken++;movesEl.textContent=state.movesTaken;phraseEl.textContent='';
-      if(checkLevelEnd())return;nextPlayer();
-    },1200);
+    phrase.textContent = 'Not a match 🙈';
+    phrase.style.color = 'var(--coral)';
+    setTimeout(() => {
+      if(state.firstCard) {
+        state.firstCard.classList.remove('flipped');
+        state.firstCard.setAttribute('aria-label', 'Hidden card');
+      }
+
+      if(state.secondCard) {
+        state.secondCard.classList.remove('flipped');
+        state.secondCard.setAttribute('aria-label', 'Hidden card');
+      }
+      state.firstCard = null;
+      state.secondCard = null;
+      state.checking = false;
+      state.timerStarted = false;
+      state.movesTaken ++;
+      moves.textContent = state.movesTaken;
+      phrase.textContent = '';
+      if(checkLevelEnd()) return;
+      nextPlayer();
+    }, 1200);
   }
 }
 
-function startTimer(){
-  const lv=LEVELS[state.currentLevel];state.timeLeft=lv.turnTime;timerEl.textContent=state.timeLeft;timerEl.classList.remove('warning');
+function startTimer() {
+  const lv = LEVELS[state.currentLevel];
+  state.timeLeft = lv.turnTime;
+  timer.textContent = state.timeLeft;
+  timer.classList.remove('warning');
   clearInterval(state.timerInterval);
-  state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;if(state.timeLeft<=5)timerEl.classList.add('warning');if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);
+  state.timerInterval = setInterval(() => {
+    state.timeLeft --;
+    timer.textContent = state.timeLeft;
+    if(state.timeLeft <= 5) timer.classList.add('warning');
+    if(state.timeLeft <= 0) {
+      clearInterval(state.timerInterval);
+      onTimeUp();
+    }}, 1000);
 }
-function onTimeUp(){
-  phraseEl.textContent='Too slow! ⏰';phraseEl.style.color='var(--ember)';
-  if(state.firstCard){state.firstCard.classList.remove('flipped');state.firstCard.setAttribute('aria-label','Hidden card');}
-  if(state.secondCard){state.secondCard.classList.remove('flipped');state.secondCard.setAttribute('aria-label','Hidden card');}
-  state.firstCard=null;state.secondCard=null;state.checking=false;state.timerStarted=false;
-  state.movesTaken++;movesEl.textContent=state.movesTaken;
-  setTimeout(()=>{phraseEl.textContent='';if(checkLevelEnd())return;nextPlayer();},800);
+function onTimeUp() {
+  phrase.textContent = 'Too slow! ⏰';
+  phrase.style.color = 'var(--ember)';
+  if(state.firstCard) {
+    state.firstCard.classList.remove('flipped');
+    state.firstCard.setAttribute('aria-label', 'Hidden card');
+  }
+
+  if(state.secondCard) {
+    state.secondCard.classList.remove('flipped');
+    state.secondCard.setAttribute('aria-label','Hidden card');
+  }
+
+  state.firstCard = null;
+  state.secondCard = null;
+  state.checking = false;
+  state.timerStarted = false;
+  state.movesTaken ++;
+  movesEl.textContent = state.movesTaken;
+  setTimeout(() => {phraseEl.textContent = '';
+  if(checkLevelEnd()) return;
+  nextPlayer();
+}, 800);
 }
-function nextPlayer(){state.currentPlayer=(state.currentPlayer+1)%state.numPlayers;highlightActivePlayer();timerEl.textContent=LEVELS[state.currentLevel].turnTime;timerEl.classList.remove('warning');}
-function checkLevelEnd(){const lv=LEVELS[state.currentLevel];if(state.matchedPairs>=lv.pairs.length||state.movesTaken>=lv.maxMoves){showLevelEnd();return true;}return false;}
-function showLevelEnd(){
-  state.gameOver=true;clearInterval(state.timerInterval);
-  gameArea.style.display='none';gameFooter.style.display='none';
-  matchesFab.classList.remove('show');safeWordFab.classList.remove('show');
-  popupOpen=false;matchesPopup.classList.remove('visible');
+
+function nextPlayer() {
+  state.currentPlayer = (state.currentPlayer + 1) % state.numPlayers;highlightActivePlayer();
+  timer.textContent = LEVELS[state.currentLevel].turnTime;
+  timer.classList.remove('warning');
+}
+
+function checkLevelEnd() { 
+  const lv = LEVELS[state.currentLevel];
+  if(state.matchedPairs >= lv.pairs.length || state.movesTaken >= lv.maxMoves) {
+    showLevelEnd();
+    return true;
+  } 
+  return false;
+}
+function showLevelEnd() {
+  state.gameOver = true;
+  clearInterval(state.timerInterval);
+  gameArea.style.display = 'none';
+  gameFooter.style.display = 'none';
+  matchesFab.classList.remove('show');
+  safeWordFab.classList.remove('show');
+  popupOpen = false;
+  matchesPopup.classList.remove('visible');
 
   // Store results for after check-in
-  const lv=LEVELS[state.currentLevel];
-  state._endTitle=state.matchedPairs>=lv.pairs.length
-    ?(state.currentLevel===0?`💕 Date Night Ready!`:`🔥 ${lv.name} Complete!`)
-    :'⏰ Out of Moves!';
-  let html='';const mx=Math.max(...state.scores);
-  for(let i=0;i<state.numPlayers;i++){const w=state.scores[i]===mx;html+=`<div class="${w?'winner':''}">Player ${i+1}: ${state.scores[i]} points${w?' 👑':''}</div>`;}
-  state._endScores=html;
+  const lv = LEVELS[state.currentLevel];
+  state._endTitle = state.matchedPairs >= lv.pairs.length
+    ? (state.currentLevel === 0 ? `💕 Date Night Ready!`:`🔥 ${lv.name} Complete!`) : '⏰ Out of Moves!';
+  let html = '';
+  const mx = Math.max(...state.scores);
+  for(let i = 0; i< state.numPlayers; i++) {
+    const w = state.scores[i] === mx;
+    html += `<div class="${w?'winner':''}">Player ${i+1}: ${state.scores[i]} points${w?' 👑':''}</div>`;
+  }
+  state._endScores = html;
 
   // Show post-game check-in
-  checkinPostQ.textContent=getCheckinQ(CHECKIN_POST_QUESTIONS,usedPostQs);
-  buildCheckinScale('checkin-post-scale','btn-checkin-post-next');
-  btnCheckinPostNext.disabled=true;
+  checkinPostQ.textContent = getCheckinQ(CHECKIN_POST_QUESTIONS, usedPostQs);
+  buildCheckinScale('checkin-post-scale', 'btn-checkin-post-next');
+  btnCheckinPostNext.disabled = true;
   checkinPost.classList.add('visible');
 }
-btnCheckinPostNext.addEventListener('click',()=>{
-  const sel=document.querySelector('#checkin-post-scale .checkin-btn.selected');
-  state._postQ=checkinPostQ.textContent;
-  state._postRating=sel?parseInt(sel.dataset.val):0;
+
+btnCheckinPostNext.addEventListener('click', () => {
+  const sel = document.querySelector('#checkin-post-scale .checkin-btn.selected');
+  state._postQ = checkinPostQ.textContent;
+  state._postRating = sel ? parseInt(sel.dataset.val) : 0;
   checkinPost.classList.remove('visible');
-  endTitleEl.textContent=state._endTitle;
-  endScoresEl.innerHTML=state._endScores;
+  endTitle.textContent = state._endTitle;
+  endScores.innerHTML = state._endScores;
 
   // Date checklist for Dating level
-  const checklistEl=document.querySelector ('date-checklist');
-  const checklistItems=document.querySelector ('date-checklist-items');
-  if(state.currentLevel===0 && state.dateChecklist.length>0){
-    checklistItems.innerHTML='';
-    state.dateChecklist.forEach((item,i)=>{
-      const row=document.createElement('div');
-      row.className='date-item';row.setAttribute('role','checkbox');row.setAttribute('aria-checked','false');
-      row.innerHTML=`<div class="date-item-check">✓</div><div class="date-item-emoji">${item.emoji1}</div><div class="date-item-content"><div class="date-item-name">${item.name}</div><div class="date-item-discovery">💬 ${item.discovery}</div></div>`;
-      row.addEventListener('click',()=>{
-        const checked=row.classList.toggle('checked');
-        row.setAttribute('aria-checked',checked?'true':'false');
+  const checklistEl = document.querySelector ('#date-checklist');
+  const checklistItems = document.querySelector ('#date-checklist-items');
+  if(state.currentLevel === 0 && state.dateChecklist.length > 0) {
+    checklistItems.innerHTML = '';
+    state.dateChecklist.forEach((item, i) => {
+      const row = document.createElement('div');
+      row.className = 'date-item';
+      row.setAttribute('role', 'checkbox');
+      row.setAttribute('aria-checked', 'false');
+      row.innerHTML =`<div class="date-item-check">✓</div><div class="date-item-emoji">${item.emoji1}</div><div class="date-item-content"><div class="date-item-name">${item.name}</div><div class="date-item-discovery">💬 ${item.discovery}</div></div>`;
+      row.addEventListener('click', () => {
+        const checked = row.classList.toggle('checked');
+        row.setAttribute('aria-checked', checked ? 'true' : 'false');
       });
       checklistItems.appendChild(row);
     });
-    checklistEl.style.display='block';
+    checklistEl.style.display = 'block';
   } else {
-    checklistEl.style.display='none';
+    checklistEl.style.display = 'none';
   }
 
   // Save session if opted in
   saveSessionIfEnabled();
-  endscreenEl.classList.add('visible');
+  endscreen.classList.add('visible');
 });
 
-document.querySelector ('btn-play-again').addEventListener('click',()=>{
-  state.scores=Array(state.numPlayers).fill(0);
+document.querySelector ('#btn-play-again').addEventListener('click', () => {
+  state.scores = Array(state.numPlayers).fill(0);
   endscreenEl.classList.remove('visible');
-  checkinPreQ.textContent=getCheckinQ(CHECKIN_PRE_QUESTIONS,usedPreQs);
-  buildCheckinScale('checkin-pre-scale','btn-checkin-pre-next');
-  btnCheckinPreNext.disabled=true;
+  checkinPreQ.textContent = getCheckinQ(CHECKIN_PRE_QUESTIONS, usedPreQs);
+  buildCheckinScale('checkin-pre-scale', 'btn-checkin-pre-next');
+  btnCheckinPreNext.disabled = true;
   checkinPre.classList.add('visible');
 });
-document.querySelector ('btn-restart').addEventListener('click',fullRestart);
-document.querySelector ('btn-reboot').addEventListener('click',fullRestart);
 
-function fullRestart(){
-  clearInterval(state.timerInterval);clearInterval(ageInterval);
-  state={numPlayers:0,currentLevel:0,scores:[],currentPlayer:0,firstCard:null,secondCard:null,checking:false,
-    matchedPairs:0,movesTaken:0,timeLeft:0,timerInterval:null,timerStarted:false,gameOver:false,deck:[],foundPairs:new Set(),paused:false,dateChecklist:[]};
-  selectedCount=0;selectedLevel=-1;ageTimerStarted=false;ageExpired=false;usedPrompts=[];usedMemoryPrompts=[];usedVulnPrompts=[];usedPreQs=[];usedPostQs=[];
-  gameArea.style.display='none';gameFooter.style.display='none';
-  endscreenEl.classList.remove('visible');actModal.classList.remove('visible');pauseModal.classList.remove('visible');memoryModal.classList.remove('visible');vulnModal.classList.remove('visible');
-  document.querySelector ('pw-modal').classList.remove('visible');
-  document.querySelector ('purchase-modal').classList.remove('visible');
-  checkinPre.classList.remove('visible');checkinPost.classList.remove('visible');
-  document.querySelector ('setup-level').classList.remove('visible');
-  document.querySelector ('setup-players').classList.remove('visible');
-  document.querySelector ('setup-rules').classList.remove('visible');
-  document.querySelector ('blocked-screen').classList.remove('visible');
-  matchesFab.classList.remove('show');safeWordFab.classList.remove('show');
-  popupOpen=false;matchesPopup.classList.remove('visible');
-  document.querySelectorAll('#player-count-options .setup-btn').forEach(b=>b.classList.remove('selected'));
-  btnToLevel.disabled=true;btnStartGame.disabled=true;btnRulesNext.disabled=true;consentCb.checked=false;
-  btnVerify.disabled=true;dobMonth.disabled=false;dobDay.disabled=false;dobYear.disabled=false;
-  dobMonth.value='';dobDay.value='';dobYear.value='';ageError.textContent='';
+document.querySelector ('#btn-restart').addEventListener('click',fullRestart);
+document.querySelector ('#btn-reboot').addEventListener('click', fullRestart);
+
+function fullRestart() {
+  clearInterval(state.timerInterval);
+  clearInterval(ageInterval);
+  state = {
+    numPlayers: 0,
+    currentLevel: 0,
+    scores: [],
+    currentPlayer: 0,
+    firstCard: null,
+    secondCard: null,
+    checking: false,
+    matchedPairs: 0,
+    movesTaken:0, 
+    timeLeft: 0,
+    timerInterval: null,
+    timerStarted: false,
+    gameOver: false,
+    deck: [],
+    foundPairs: new Set(),
+    paused: false,
+    dateChecklist: []
+  };
+
+  selectedCount = 0;
+  selectedLevel = -1;
+  ageTimerStarted = false;
+  ageExpired = false;
+  usedPrompts = [];
+  usedMemoryPrompts = [];
+  usedVulnPrompts = [];
+  usedPreQs = [];
+  usedPostQs = [];
+  gameArea.style.display ='none';
+  gameFooter.style.display ='none';
+  endscreenEl.classList.remove('visible');
+  actModal.classList.remove('visible');
+  pauseModal.classList.remove('visible');
+  memoryModal.classList.remove('visible');
+  vulnModal.classList.remove('visible');
+  document.querySelector ('#pw-modal').classList.remove('visible');
+  document.querySelector ('#purchase-modal').classList.remove('visible');
+  checkinPre.classList.remove('visible');
+  checkinPost.classList.remove('visible');
+  document.querySelector ('#setup-level').classList.remove('visible');
+  document.querySelector ('#setup-players').classList.remove('visible');
+  document.querySelector ('#setup-rules').classList.remove('visible');
+  document.querySelector ('#blocked-screen').classList.remove('visible');
+  matchesFab.classList.remove('show');
+  safeWordFab.classList.remove('show');
+  popupOpen = false;
+  matchesPopup.classList.remove('visible');
+  document.querySelectorAll('#player-count-options .setup-btn').forEach(b => b.classList.remove('selected'));
+  btnToLevel.disabled = true;
+  btnStartGame.disabled = true;
+  btnRulesNext.disabled = true;
+  consentCb.checked = false;
+  btnVerify.disabled = true;
+  dobMonth.disabled = false;
+  dobDay.disabled = false;
+  dobYear.disabled = false;
+  dobMonth.value = '';
+  dobDay.value = '';
+  dobYear.value = '';
+  ageError.textContent = '';
   document.querySelector ('age-gate').classList.add('visible');
 }
 
 // ═══ PRIVACY & DATA CONTROLS ═══
-const STORAGE_KEY='en_sessions';
-const SAVE_PREF_KEY='en_save_enabled';
-const toggleSave=document.querySelector ('toggle-save');
-const btnExport=document.querySelector ('btn-export');
-const btnClear=document.querySelector ('btn-clear');
-const privacyStatus=document.querySelector ('privacy-status');
-const pwModal=document.querySelector ('pw-modal');
-const pwInput=document.querySelector ('pw-input');
-const btnPwGo=document.querySelector ('btn-pw-go');
-const btnPwCancel=document.querySelector ('btn-pw-cancel');
+const STORAGE_KEY = 'en_sessions';
+const SAVE_PREF_KEY = 'en_save_enabled';
+const toggleSave = document.querySelector ('#toggle-save');
+const btnExport = document.querySelector ('#btn-export');
+const btnClear = document.querySelector ('#btn-clear');
+const privacyStatus = document.querySelector ('#privacy-status');
+const pwModal = document.querySelector ('#pw-modal');
+const pwInput = document.querySelector ('#pw-input');
+const btnPwGo = document.querySelector ('#btn-pw-go');
+const btnPwCancel = document.querySelector ('#btn-pw-cancel');
 
 // Init toggle from stored preference
-try { toggleSave.checked=localStorage.getItem(SAVE_PREF_KEY)==='true'; } catch(e){}
+try { 
+  toggleSave.checked = localStorage.getItem(SAVE_PREF_KEY) === 'true'; 
+} catch(e) {}
 updatePrivacyUI();
 
-toggleSave.addEventListener('change',()=>{
+toggleSave.addEventListener('change',() => {
   try {
-    if(toggleSave.checked){
+    if(toggleSave.checked) {
       localStorage.setItem(SAVE_PREF_KEY,'true');
-      privacyStatus.textContent='✓ Data will be saved locally after each game';
+      privacyStatus.textContent = '✓ Data will be saved locally after each game';
     } else {
       localStorage.setItem(SAVE_PREF_KEY,'false');
-      privacyStatus.textContent='Saving disabled — data stays in this session only';
+      privacyStatus.textContent = 'Saving disabled — data stays in this session only';
     }
-  } catch(e){ privacyStatus.textContent='⚠ localStorage not available in this browser'; }
+  } catch(e) { privacyStatus.textContent = '⚠ localStorage not available in this browser'; 
+
+  }
   updatePrivacyUI();
 });
 
-function updatePrivacyUI(){
-  let count=0;
-  try { const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); count=d.length; } catch(e){}
-  btnExport.disabled=count===0 && !hasCurrentSession();
-  btnClear.disabled=count===0;
-  if(count>0) privacyStatus.textContent=`${count} session${count>1?'s':''} saved on this device`;
+function updatePrivacyUI() {
+  let count = 0;
+  try { 
+    const d = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); 
+    count = d.length; 
+  } catch(e) {}
+  btnExport.disabled = count === 0 && !hasCurrentSession();
+  btnClear.disabled = count === 0;
+  if(count > 0) privacyStatus.textContent = `${count} session${count>1?'s' : ''} saved on this device`;
 }
 
-function hasCurrentSession(){ return state._endTitle && state._endTitle.length>0; }
+function hasCurrentSession() { 
+  return state._endTitle && state._endTitle.length > 0; 
+}
 
-function buildSessionData(){
-  const lv=LEVELS[state.currentLevel];
+function buildSessionData() {
+  const lv = LEVELS[state.currentLevel];
   return {
-    date:new Date().toISOString(),
-    level:lv.name,
-    players:state.numPlayers,
-    scores:[...state.scores],
-    matchedPairs:state.matchedPairs,
-    totalPairs:lv.pairs.length,
-    movesTaken:state.movesTaken,
-    maxMoves:lv.maxMoves,
-    preCheckin:{question:state._preQ||'',rating:state._preRating||0},
-    postCheckin:{question:state._postQ||'',rating:state._postRating||0},
-    checklist:state.dateChecklist.map(c=>({name:c.name,emoji:c.emoji1,discovery:c.discovery})),
+    date: new Date().toISOString(),
+    level: lv.name,
+    players: state.numPlayers,
+    scores: [...state.scores],
+    matchedPairs: state.matchedPairs,
+    totalPairs: lv.pairs.length,
+    movesTaken: state.movesTaken,
+    maxMoves: lv.maxMoves,
+    preCheckin: {question: state._preQ || '',
+    rating: state._preRating || 0},
+    postCheckin: {question:state._postQ || '',
+    rating: state._postRating || 0},
+    checklist: state.dateChecklist.map(c => ({name: c.name,
+      emoji: c.emoji1,
+      discovery: c.discovery})),
   };
 }
 
-function saveSessionIfEnabled(){
+function saveSessionIfEnabled() {
   if(!toggleSave.checked) return;
   try {
-    const sessions=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+    const sessions = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     sessions.push(buildSessionData());
     localStorage.setItem(STORAGE_KEY,JSON.stringify(sessions));
     updatePrivacyUI();
-  } catch(e){ privacyStatus.textContent='⚠ Could not save — storage may be full'; }
+  } catch(e) { 
+    privacyStatus.textContent = '⚠ Could not save — storage may be full';
+  }
 }
 
 // ── Clear Data ──
-btnClear.addEventListener('click',()=>{
+btnClear.addEventListener('click', () => {
   if(!confirm('Clear ALL saved game data from this device? This cannot be undone.')) return;
   try {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(SAVE_PREF_KEY);
-    toggleSave.checked=false;
-    privacyStatus.textContent='✓ All data cleared';
+    toggleSave.checked = false;
+    privacyStatus.textContent = '✓ All data cleared';
     updatePrivacyUI();
-  } catch(e){ privacyStatus.textContent='⚠ Could not clear data'; }
+  } catch(e){ 
+    privacyStatus.textContent = '⚠ Could not clear data'; 
+  }
 });
 
 // ── Export Encrypted PDF ──
-btnExport.addEventListener('click',()=>{
-  pwInput.value='';btnPwGo.disabled=true;
+btnExport.addEventListener('click', () => {
+  pwInput.value = '';
+  btnPwGo.disabled = true;
   pwModal.classList.add('visible');
   pwInput.focus();
 });
-pwInput.addEventListener('input',()=>{ btnPwGo.disabled=pwInput.value.length<4; });
-btnPwCancel.addEventListener('click',()=>{ pwModal.classList.remove('visible'); });
 
-btnPwGo.addEventListener('click',()=>{
-  const password=pwInput.value;
+pwInput.addEventListener('input',() => { 
+  btnPwGo.disabled = pwInput.value.length < 4; 
+});
+
+btnPwCancel.addEventListener('click', () => { 
+  pwModal.classList.remove('visible'); 
+});
+
+btnPwGo.addEventListener('click',() => {
+  const password = pwInput.value;
   if(password.length<4) return;
   pwModal.classList.remove('visible');
 
   // Gather all data: saved sessions + current session
-  let sessions=[];
-  try { sessions=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch(e){}
-  if(hasCurrentSession()){
-    const current=buildSessionData();
-    const isDup=sessions.some(s=>s.date===current.date);
+  let sessions = [];
+  try { 
+    sessions=JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); 
+  } catch(e) {}
+  if(hasCurrentSession()) {
+    const current = buildSessionData();
+    const isDup = sessions.some(s => s.date === current.date);
     if(!isDup) sessions.push(current);
   }
-  if(sessions.length===0){ privacyStatus.textContent='No data to export'; return; }
+  if(sessions.length === 0) { 
+    privacyStatus.textContent =' No data to export'; 
+    return; 
+  }
 
-  generateEncryptedPDF(sessions,password);
+  generateEncryptedPDF(sessions, password);
 });
 
-function generateEncryptedPDF(sessions,password){
+function generateEncryptedPDF(sessions, password) {
   try {
-    const {jsPDF}=window.jspdf;
-    const doc=new jsPDF({format:'a4',unit:'mm'});
-    const pw=doc.internal.pageSize.getWidth();
-    const margin=18;
-    const maxW=pw-margin*2;
-    let y=20;
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({format: 'a4', unit: 'mm'});
+    const pw = doc.internal.pageSize.getWidth();
+    const margin = 18;
+    const maxW = pw - margin * 2;
+    let y = 20;
 
-    function checkPage(need){
-      if(y+need>275){doc.addPage();y=20;}
+    function checkPage(need) {
+      if(y + need > 275) {
+        doc.addPage();
+        y = 20;
+      }
     }
 
     // Title page
-    doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(90,20,60);
-    doc.text('Explicitly Naughty',pw/2,y,{align:'center'});y+=10;
-    doc.setFontSize(11);doc.setFont('helvetica','normal');doc.setTextColor(120,80,100);
-    doc.text('Private Game Journal — Encrypted Export',pw/2,y,{align:'center'});y+=6;
-    doc.setFontSize(8);doc.setTextColor(160,130,150);
-    doc.text(`Exported: ${new Date().toLocaleString()}`,pw/2,y,{align:'center'});y+=4;
-    doc.text(`Sessions: ${sessions.length}`,pw/2,y,{align:'center'});y+=12;
-    doc.setDrawColor(200,160,180);doc.line(margin,y,pw-margin,y);y+=10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(90, 20, 60);
+    doc.text('Explicitly Naughty',
+    pw / 2, y, {align:'center'}); y += 10;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(120, 80, 100);
+    doc.text('Private Game Journal — Encrypted Export', pw / 2, y, {align: 'center'}); y += 6;
+    doc.setFontSize(8);
+    doc.setTextColor(160, 130, 150);
+    doc.text(`Exported: ${new Date().toLocaleString()}`, pw / 2, y,{align:'center'}); y += 4;
+    doc.text(`Sessions: ${sessions.length}`, pw / 2, y, {align:'center'}); y+= 12;
+    doc.setDrawColor(200, 160, 180);
+    doc.line(margin, y, pw - margin, y); y += 10;
 
-    sessions.forEach((s,idx)=>{
+    sessions.forEach((s, idx) => {
       checkPage(60);
       // Session header
-      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(90,20,60);
-      doc.text(`Session ${idx+1}: ${s.level}`,margin,y);y+=6;
-      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,80,90);
-      const dt=new Date(s.date);
-      doc.text(`${dt.toLocaleDateString()} at ${dt.toLocaleTimeString()} — ${s.players} player${s.players>1?'s':''}`,margin,y);y+=6;
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(13);
+      doc.setTextColor(90, 20, 60);
+      doc.text(`Session ${idx+1}: ${s.level}`, margin, y); y += 6;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(9);
+      doc.setTextColor(100, 80, 90);
+      const dt = new Date(s.date);
+      doc.text(`${dt.toLocaleDateString()} at ${dt.toLocaleTimeString()} — ${s.players} player${s.players > 1 ? 's' : ''}`, margin, y); y += 6;
 
       // Scores
-      doc.setFontSize(9);doc.setTextColor(80,60,70);
-      const scoreStr=s.scores.map((sc,i)=>`Player ${i+1}: ${sc}`).join('  |  ');
-      doc.text(`Scores: ${scoreStr}   (${s.matchedPairs}/${s.totalPairs} pairs, ${s.movesTaken}/${s.maxMoves} moves)`,margin,y);y+=8;
+      doc.setFontSize(9);
+      doc.setTextColor(80, 60, 70);
+      const scoreStr = s.scores.map((sc, i) => `Player ${i + 1} : ${sc}`).join('  |  ');
+      doc.text(`Scores: ${scoreStr}   (${s.matchedPairs}/${s.totalPairs} pairs, ${s.movesTaken}/${s.maxMoves} moves)`, margin, y); y += 8;
 
       // Check-ins
-      if(s.preCheckin.question){
+      if(s.preCheckin.question) {
         checkPage(14);
-        doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(140,110,130);
-        doc.text('Pre-game check-in:',margin,y);y+=4;
+        doc.setFont('helvetica', 'italic');
+        doc.setFontSize(8);
+        doc.setTextColor(140, 110, 130);
+        doc.text('Pre-game check-in:', margin, y); y += 4;
         doc.setFont('helvetica','normal');
-        const preLines=doc.splitTextToSize(`"${s.preCheckin.question}" — Rating: ${'❤️'.repeat(s.preCheckin.rating)} (${s.preCheckin.rating}/10)`,maxW);
-        doc.text(preLines,margin,y);y+=preLines.length*4+2;
+        const preLines = doc.splitTextToSize(`"${s.preCheckin.question}" — Rating: ${'❤️'.repeat(s.preCheckin.rating)} (${s.preCheckin.rating}/10)`, maxW);
+        doc.text(preLines, margin, y);
+        y += preLines.length * 4 + 2;
       }
-      if(s.postCheckin.question){
+
+      if(s.postCheckin.question) {
         checkPage(14);
-        doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(140,110,130);
-        doc.text('Post-game check-in:',margin,y);y+=4;
+        doc.setFont('helvetica','italic');
+        doc.setFontSize(8);
+        doc.setTextColor(140, 110, 130);
+        doc.text('Post-game check-in:', margin, y); y += 4;
         doc.setFont('helvetica','normal');
-        const postLines=doc.splitTextToSize(`"${s.postCheckin.question}" — Rating: ${'❤️'.repeat(s.postCheckin.rating)} (${s.postCheckin.rating}/10)`,maxW);
-        doc.text(postLines,margin,y);y+=postLines.length*4+2;
+        const postLines = doc.splitTextToSize(`"${s.postCheckin.question}" — Rating: ${'❤️'.repeat(s.postCheckin.rating)} (${s.postCheckin.rating}/10)`, maxW);
+        doc.text(postLines,margin,y);
+        y += postLines.length * 4 + 2;
       }
 
       // Checklist items
-      if(s.checklist&&s.checklist.length>0){
+      if(s.checklist && s.checklist.length > 0) {
         checkPage(10);
-        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(90,20,60);
-        doc.text(s.level==='Dating'?'Date Night Checklist:':'Prompts & Moments:',margin,y);y+=5;
-        s.checklist.forEach(item=>{
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(9);
+        doc.setTextColor(90, 20, 60);
+        doc.text(s.level === 'Dating' ? 'Date Night Checklist:' : 'Prompts & Moments:', margin, y); y += 5;
+        s.checklist.forEach(item => {
           checkPage(12);
-          doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(80,60,70);
-          doc.text(`${item.emoji||'•'}  ${item.name}`,margin+2,y);y+=4;
-          if(item.discovery){
-            doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(140,110,130);
-            const dLines=doc.splitTextToSize(`"${item.discovery}"`,maxW-8);
-            doc.text(dLines,margin+6,y);y+=dLines.length*3.5+2;
+          doc.setFont('helvetica','normal');
+          doc.setFontSize(8.5);
+          doc.setTextColor(80, 60, 70);
+          doc.text(`${item.emoji || '•'}  ${item.name}`, margin + 2, y); y += 4;
+          if(item.discovery) {
+            doc.setFont('helvetica','italic');
+            doc.setFontSize(7.5)
+            doc.setTextColor(140, 110, 130);
+            const dLines = doc.splitTextToSize(`"${item.discovery}"`, maxW - 8);
+            doc.text(dLines, margin + 6, y); y += dLines.length * 3.5 + 2;
           }
         });
       }
 
-      y+=4;checkPage(4);
-      doc.setDrawColor(220,200,210);doc.line(margin,y,pw-margin,y);y+=8;
+      y += 4;
+      checkPage(4);
+      doc.setDrawColor(220, 200, 210);
+      doc.line(margin, y, pw-margin, y);
+      y += 8;
     });
 
     // Footer
     checkPage(16);
-    doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(180,160,170);
-    doc.text('This document is password-protected. Keep it safe.',pw/2,y,{align:'center'});y+=4;
-    doc.text('Your data never left your device. This is yours.',pw/2,y,{align:'center'});
+    doc.setFont('helvetica','italic');
+    doc.setFontSize(7);
+    doc.setTextColor(180, 160, 170);
+    doc.text('This document is password-protected. Keep it safe.', pw / 2, y,{align:'center'});
+    y += 4;
+    doc.text('Your data never left your device. This is yours.',pw / 2, y,{align:'center'});
 
     // Encrypt and save
-    doc.save('explicitly-naughty-journal.pdf',{encryption:{userPassword:password,ownerPassword:password+'_owner',userPermissions:['print']}});
-    privacyStatus.textContent='✓ Encrypted PDF exported — check your downloads';
+    doc.save('explicitly-naughty-journal.pdf', {encryption:{userPassword: password,ownerPassword: password + '_owner', userPermissions: ['print']}});
+    privacyStatus.textContent = '✓ Encrypted PDF exported — check your downloads';
   } catch(e){
-    console.error('PDF export error:',e);
-    privacyStatus.textContent='⚠ PDF export failed — try a different browser';
+    console.error('PDF export error:', e);
+    privacyStatus.textContent = '⚠ PDF export failed — try a different browser';
   }
 }
 
 // ═══ PWA: SERVICE WORKER & INSTALL PROMPT ═══
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').then(reg=>{
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').then(reg => {
     console.log('SW registered:', reg.scope);
     // Check for updates periodically
-    setInterval(()=>reg.update(),60*60*1000);
-  }).catch(err=>console.log('SW registration failed:',err));
+    setInterval(() => reg.update(), 60 * 60 * 1000);
+  }).catch(err => 
+  console.log('SW registration failed:', err));
 }
 
-let deferredInstallPrompt=null;
-const installBanner=document.querySelector ('install-banner');
-const btnInstall=document.querySelector ('btn-install');
-const btnInstallDismiss=document.querySelector ('btn-install-dismiss');
+let deferredInstallPrompt = null;
+const installBanner = document.querySelector ('#install-banner');
+const btnInstall = document.querySelector ('#btn-install');
+const btnInstallDismiss = document.querySelector ('#btn-install-dismiss');
 
-window.addEventListener('beforeinstallprompt',e=>{
+window.addEventListener('beforeinstallprompt', e => {
   e.preventDefault();
-  deferredInstallPrompt=e;
+  deferredInstallPrompt = e;
   // Only show if not previously dismissed this session
-  if(!sessionStorage.getItem('en_install_dismissed')){
+  if(!sessionStorage.getItem('en_install_dismissed')) {
     installBanner.classList.add('show');
   }
 });
 
-if(btnInstall) btnInstall.addEventListener('click',async()=>{
+if(btnInstall) btnInstall.addEventListener('click', async() => {
   if(!deferredInstallPrompt) return;
   installBanner.classList.remove('show');
   deferredInstallPrompt.prompt();
-  const result=await deferredInstallPrompt.userChoice;
-  console.log('Install result:',result.outcome);
-  deferredInstallPrompt=null;
+  const result = await deferredInstallPrompt.userChoice;
+  console.log('Install result:', result.outcome);
+  deferredInstallPrompt = null;
 });
 
-if(btnInstallDismiss) btnInstallDismiss.addEventListener('click',()=>{
+if(btnInstallDismiss) btnInstallDismiss.addEventListener('click', () => {
   installBanner.classList.remove('show');
-  sessionStorage.setItem('en_install_dismissed','true');
+  sessionStorage.setItem('en_install_dismissed', 'true');
 });
 
-window.addEventListener('appinstalled',()=>{
+window.addEventListener('appinstalled', () => {
   installBanner.classList.remove('show');
-  deferredInstallPrompt=null;
+  deferredInstallPrompt = null;
   console.log('App installed');
 });
 </script>
