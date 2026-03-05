@@ -1,85 +1,1513 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Classic Memory Game, Reimagined</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet"  href="./style.css">
-    <script defer src="./app.js"></script>
- </head>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0D0614">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Naughty">
+<meta name="description" content="A couples matching game — match it, act it out.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Explicitly Naughty</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+</head>
 <body>
-  <div class="wmark-container" id="wmark-container"></div>
-  <h1> Pair it to Win it!</h1>
-  <h2 id="banner-message"> Click the circles and uncover it's mate!</h2>
-<div id ="phrase-display"></div>
+<div class="container">
+  <header class="game-header">
+    <div class="game-title">Explicitly Naughty</div>
+    <div class="game-subtitle">Match it. Act it out.</div>
+  </header>
 
-<div id="vibe-switchboard"></div>
-  <h3>Choose your mode wisely, your memory is banking on it!</h3>
-
-
-  <button id="mind-challenger" class="brain-btn">Mind vs Consciousness</button>
-  <button id="bitsbytes-pc" class="bitsbytes-btn">Brains vs PC</button>  
-
-</div>
-<button id="rebootBtn">Reboot Game</button>
-
-  <div id="key">
-    <h4>Key:</h4>
-    <div id="key-combos"></div>
-
+  <!-- ═══ AGE GATE ═══ -->
+  <div id="age-gate" class="setup-screen visible">
+    <div class="age-icon">🔞</div>
+    <div class="setup-heading">Verify Your Age</div>
+    <div class="setup-sub">This game is for adults 18+. Enter your date of birth to continue.</div>
+    <div class="dob-row">
+      <select class="dob-select" id="dob-month"><option value="" disabled selected>Month</option></select>
+      <select class="dob-select" id="dob-day"><option value="" disabled selected>Day</option></select>
+      <select class="dob-select" id="dob-year"><option value="" disabled selected>Year</option></select>
+    </div>
+    <div class="age-error" id="age-error"></div>
+    <button class="btn-start" id="btn-verify-age" disabled>Verify & Enter</button>
+    <button class="btn-underage" id="btn-age-no">I'm Under 18</button>
   </div>
 
-  <section class="container">
-    <div id="match">Match: 0</div>
-    <div id="timer"> Timer: 0</div>
-    <div id="moves"> Moves: 0</div>
-    <div id="runInput"></div>
-  </section>
+  <!-- ═══ BLOCKED ═══ -->
+  <div id="blocked-screen" class="blocked-screen">
+    <div class="blocked-icon">🚫</div>
+    <div class="setup-heading">Sorry!</div>
+    <div class="blocked-msg">This game is only for players 18 and over. Come back when you're old enough!</div>
+  </div>
 
-<section id="board">
-<div class="hidden-draw" id="🌸"></div>
-<div class="hidden-draw" id="✨"></div>
-<div class="hidden-draw" id="🌈"></div>
-<div class="hidden-draw" id="🦊"></div>
-<div class="hidden-draw" id="🐝"></div>
-<div class="hidden-draw" id="🚚"></div>
-<div class="hidden-draw" id="🛑"></div>
-<div class="hidden-draw" id="🌜"></div>
-<div class="hidden-draw" id="🐥"></div>
-<div class="hidden-draw" id="☀️"></div>
-<div class="hidden-draw" id="🍔"></div>
-<div class="hidden-draw" id="🐟"></div>
-<div class="hidden-draw" id="💋"></div>
-<div class="hidden-draw" id="🐶"></div>
-<div class="hidden-draw" id="⭐️"></div>
-<div class="hidden-draw" id="📞"></div>
-<div class="hidden-draw" id="🏠"></div>
-<div class="hidden-draw" id="📰"></div>
-<div class="hidden-draw" id="🚿"></div>
-<div class="hidden-draw" id="⌚️"></div>
-<div class="hidden-draw" id="⚓️"></div>
-<div class="hidden-draw" id="🌽"></div>
-<div class="hidden-draw" id="✉️"></div>
-<div class="hidden-draw" id="❤️"></div>
-<div class="hidden-draw" id="👞"></div>
-<div class="hidden-draw" id="🇫🇷"></div>
-<div class="hidden-draw" id="☁️"></div>
-<div class="hidden-draw" id="9️⃣"></div>
-<div class="hidden-draw" id="💃"></div>
-<div class="hidden-draw" id="🌧️"></div>
-<div class="hidden-draw" id="🌮"></div>
-<div class="hidden-draw" id="🛎️"></div>
-<div class="hidden-draw" id="🐍"></div>
-<div class="hidden-draw" id="👀"></div>
-<div class="hidden-draw" id="🚫"></div>
-<div class="hidden-draw" id="🚬"></div>
-<div class="hidden-draw" id="👑"></div>
-<div class="hidden-draw" id="🍎"></div>
-<div class="hidden-draw" id="👶"></div>
-<div class="hidden-draw" id="🐴"></div>
-</section>
+  <!-- ═══ GROUND RULES ═══ -->
+  <div id="setup-rules" class="setup-screen">
+    <div class="step-indicator"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+    <div class="setup-heading">Ground Rules</div>
+    <div class="setup-sub">Everyone reads these before playing.</div>
+    <div class="rules-card">
+      <h3>Playing Safe & Having Fun</h3>
+      <div class="rule-item"><span class="rule-icon">💛</span><span class="rule-text"><b>Consent is everything.</b> Every action requires enthusiastic agreement from everyone involved.</span></div>
+      <div class="rule-item"><span class="rule-icon">🛑</span><span class="rule-text"><b>Anyone can skip.</b> Every prompt has a Skip button. No one has to explain why.</span></div>
+      <div class="rule-item"><span class="rule-icon">⏸️</span><span class="rule-text"><b>Pause anytime.</b> The ⏸ button is always available for anyone to check in.</span></div>
+      <div class="rule-item"><span class="rule-icon">🚫</span><span class="rule-text"><b>No harm, no degradation.</b> Nothing should hurt, humiliate, or make anyone uncomfortable.</span></div>
+      <div class="rule-item"><span class="rule-icon">🤝</span><span class="rule-text"><b>Respect boundaries.</b> If someone says stop, it stops. Non-negotiable.</span></div>
+      <div class="rule-item"><span class="rule-icon">💬</span><span class="rule-text"><b>Discovery prompts</b> will appear — use them to connect, not to pressure.</span></div>
+      <div class="rule-item"><span class="rule-icon">🧠</span><span class="rule-text"><b>Memory Mode wild cards</b> are hidden in the deck. Flip one and you'll get a prompt to share or recreate a memory together.</span></div>
+      <div class="rule-item"><span class="rule-icon">💫</span><span class="rule-text"><b>Connection check-ins</b> happen before and after each game. Be honest — there are no wrong answers.</span></div>
+    </div>
+    <div class="consent-check"><input type="checkbox" id="consent-checkbox"><label for="consent-checkbox">All players have read and agree to these ground rules</label></div>
+    <button class="btn-start" id="btn-rules-next" disabled>Next →</button>
+  </div>
 
-</body>    
+  <!-- ═══ PLAYERS ═══ -->
+  <div id="setup-players" class="setup-screen">
+    <div class="step-indicator"><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div></div>
+    <div class="setup-heading">How many players?</div>
+    <div class="setup-sub">Everyone takes turns flipping cards. Find a match and act it out with your partner. 😏</div>
+    <div class="setup-options" id="player-count-options">
+      <button class="setup-btn" data-count="2">2</button>
+      <button class="setup-btn" data-count="3">3</button>
+      <button class="setup-btn" data-count="4">4</button>
+    </div>
+    <button class="btn-start" id="btn-to-level" disabled>Next →</button>
+  </div>
+
+  <!-- ═══ LEVEL ═══ -->
+  <div id="setup-level" class="setup-screen">
+    <div class="step-indicator"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div></div>
+    <div class="setup-heading">Choose your vibe</div>
+    <div class="setup-sub">Pick a stage — each one gets a little more… interesting.</div>
+    <div class="level-select-grid" id="level-select-grid"></div>
+    <button class="btn-start" id="btn-start-game" disabled>Let's Play</button>
+  </div>
+
+  <!-- ═══ PRE-GAME CHECK-IN ═══ -->
+  <div id="checkin-pre" class="setup-screen">
+    <div class="checkin-card">
+      <div class="checkin-icon">💫</div>
+      <div class="checkin-question" id="checkin-pre-q"></div>
+      <div class="checkin-scale" id="checkin-pre-scale"></div>
+      <div class="checkin-labels"><span>Not at all</span><span>Completely</span></div>
+      <button class="btn-start" id="btn-checkin-pre-next" disabled>Let's Begin</button>
+    </div>
+  </div>
+
+  <!-- ═══ GAME ═══ -->
+  <div id="game-area" style="display:none;flex-direction:column;flex:1;">
+    <div id="level-badge" class="level-badge dating" style="text-align:center;"></div>
+    <div class="stats-bar">
+      <div class="stat">⏱ <span class="timer-value" id="timer">20</span></div>
+      <div class="stat">Moves: <span class="stat-value" id="moves">0</span>/<span id="max-moves">35</span></div>
+      <div class="stat">Pairs: <span class="stat-value" id="matched-count">0</span>/<span id="total-pairs">0</span></div>
+    </div>
+    <div class="player-scores" id="player-scores"></div>
+    <div class="phrase-display" id="phrase-display"></div>
+    <div class="board cols-5" id="board"></div>
+  </div>
+
+  <!-- ═══ ACT-IT-OUT MODAL ═══ -->
+  <div class="modal-overlay" id="act-modal" role="dialog" aria-label="Act it out">
+    <div class="modal-box">
+      <div class="modal-emoji" id="modal-emoji"></div>
+      <div class="modal-match-name" id="modal-match-name"></div>
+      <div class="modal-player-callout" id="modal-player"></div>
+      <div class="modal-instruction">Act this out with your partner!</div>
+      <div class="discovery-prompt" id="discovery-prompt">
+        <div class="discovery-label">✨ Discovery Prompt</div>
+        <div class="discovery-text" id="discovery-text"></div>
+      </div>
+      <div class="modal-consent-reminder">💛 Only if everyone's comfortable. Skip is always okay.</div>
+      <div class="modal-actions">
+        <button class="btn-done" id="btn-act-done">Done 😈</button>
+        <button class="btn-skip" id="btn-act-skip">Skip — No pressure</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAUSE ═══ -->
+  <div class="modal-overlay" id="pause-modal" role="dialog" aria-label="Game paused">
+    <div class="pause-box">
+      <div class="pause-icon">⏸️</div>
+      <div class="pause-title">Game Paused</div>
+      <div class="pause-message">Take a moment. <b>Check in with everyone.</b> Is everyone comfortable and having fun?</div>
+      <div class="pause-actions">
+        <button class="btn-resume" id="btn-resume">We're Good ✨</button>
+        <button class="btn-end-game" id="btn-end-early">End Game</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MEMORY MODE MODAL ═══ -->
+  <div class="modal-overlay" id="memory-modal" role="dialog" aria-label="Memory Mode">
+    <div class="memory-box">
+      <div class="memory-icon">🧠</div>
+      <div class="memory-title">Memory Mode</div>
+      <div class="memory-subtitle">Wild Card Activated</div>
+      <div class="memory-player" id="memory-player"></div>
+      <div class="memory-prompt-card">
+        <div class="memory-prompt-text" id="memory-prompt-text"></div>
+      </div>
+      <div class="memory-note">💛 Share as much or as little as you're comfortable with. This is about connection, not pressure.</div>
+      <div class="modal-actions">
+        <button class="btn-memory-done" id="btn-memory-done">We Shared 💜</button>
+        <button class="btn-skip" id="btn-memory-skip">Skip — No pressure</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VULNERABILITY CARD MODAL ═══ -->
+  <div class="modal-overlay" id="vuln-modal" role="dialog" aria-label="Vulnerability Card">
+    <div class="vuln-box">
+      <div class="vuln-icon">❤️‍🩹</div>
+      <div class="vuln-title">Vulnerability Card</div>
+      <div class="vuln-subtitle">Open Your Heart</div>
+      <div class="vuln-player" id="vuln-player"></div>
+      <div class="vuln-prompt-card">
+        <div class="vuln-prompt-text" id="vuln-prompt-text"></div>
+      </div>
+      <div class="vuln-note">💛 This is a safe space. Share only what feels right. No judgment, only love.</div>
+      <div class="modal-actions">
+        <button class="btn-vuln-done" id="btn-vuln-done">We Shared ❤️</button>
+        <button class="btn-skip" id="btn-vuln-skip">Skip — No pressure</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ POST-GAME CHECK-IN ═══ -->
+  <div id="checkin-post" class="setup-screen">
+    <div class="checkin-card">
+      <div class="checkin-icon">🌙</div>
+      <div class="checkin-question" id="checkin-post-q"></div>
+      <div class="checkin-scale" id="checkin-post-scale"></div>
+      <div class="checkin-labels"><span>Not at all</span><span>Completely</span></div>
+      <button class="btn-start" id="btn-checkin-post-next" disabled>See Results</button>
+    </div>
+  </div>
+
+  <!-- ═══ END ═══ -->
+  <div id="endscreen" class="endscreen">
+    <div class="end-title" id="end-title"></div>
+    <div class="date-checklist" id="date-checklist" style="display:none;">
+      <div class="date-checklist-title">📋 Your Date Night Checklist</div>
+      <div class="date-checklist-sub">Fulfill these on your date — check them off as you go!</div>
+      <div class="date-checklist-items" id="date-checklist-items"></div>
+    </div>
+    <div class="end-scores" id="end-scores"></div>
+    <button class="btn-play-again" id="btn-play-again">Play Again</button>
+    <button class="btn-restart" id="btn-restart">Change Settings</button>
+
+    <!-- ── Privacy / Data Controls ── -->
+    <div class="privacy-section">
+      <div class="privacy-header"><span class="privacy-header-icon">🔒</span> Your Data, Your Control</div>
+      <div class="privacy-row">
+        <div class="privacy-label">Save locally on this device<small>Nothing leaves your device — ever</small></div>
+        <label class="toggle-wrap"><input type="checkbox" id="toggle-save"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="privacy-btns">
+        <button class="btn-privacy btn-export" id="btn-export">📄 Export PDF</button>
+        <button class="btn-privacy btn-clear" id="btn-clear">🗑 Clear Data</button>
+      </div>
+      <div class="privacy-status" id="privacy-status"></div>
+    </div>
+  </div>
+
+  <!-- ═══ PASSWORD PROMPT MODAL ═══ -->
+  <div class="modal-overlay" id="pw-modal" role="dialog" aria-label="Set PDF password">
+    <div class="pw-box">
+      <div style="font-size:2rem;margin-bottom:6px;">🔐</div>
+      <div class="pw-title">Encrypt Your Export</div>
+      <div class="pw-sub">Set a password to protect your PDF. Only someone with this password can open it.</div>
+      <input type="password" class="pw-input" id="pw-input" placeholder="Enter password" autocomplete="off" minlength="4">
+      <div class="pw-hint">Minimum 4 characters — choose something memorable</div>
+      <div class="pw-actions">
+        <button class="btn-pw-go" id="btn-pw-go" disabled>Export 🔒</button>
+        <button class="btn-pw-cancel" id="btn-pw-cancel">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PURCHASE / UNLOCK MODAL ═══ -->
+  <div class="modal-overlay" id="purchase-modal" role="dialog" aria-label="Unlock levels">
+    <div class="purchase-box">
+      <div class="purchase-level-icon" id="purchase-icon"></div>
+      <div class="purchase-title" id="purchase-title">Unlock More Levels</div>
+      <div class="purchase-sub" id="purchase-sub">Take your connection deeper — unlock new levels with more intensity, intimacy, and play.</div>
+      <div class="purchase-options" id="purchase-options"></div>
+      <div class="purchase-divider">or enter a code</div>
+      <div class="unlock-code-row">
+        <input type="text" class="unlock-code-input" id="unlock-code-input" placeholder="Enter unlock code" autocomplete="off" maxlength="24">
+        <button class="btn-code-apply" id="btn-code-apply">Apply</button>
+      </div>
+      <div class="unlock-status" id="unlock-status"></div>
+      <button class="btn-purchase-close" id="btn-purchase-close">Maybe Later</button>
+    </div>
+  </div>
+
+  <footer class="game-footer" id="game-footer" style="display:none;"><button id="btn-reboot">Restart Game</button></footer>
+</div>
+
+<button class="matches-fab" id="matches-fab" aria-label="View matches">🃏</button>
+<button class="safe-word-fab" id="safe-word-fab" aria-label="Pause game">⏸ Pause</button>
+<div class="matches-popup" id="matches-popup" role="dialog" aria-label="Match reference">
+  <div class="matches-popup-header">
+    <div class="matches-popup-title">Match Reference</div>
+    <button class="matches-popup-close" id="matches-popup-close" aria-label="Close">✕</button>
+  </div>
+  <div class="matches-popup-body" id="matches-popup-body"></div>
+</div>
+
+<script>
+// ═══ DISCOVERY PROMPTS ═══
+const DISCOVERY_PROMPTS = [
+  "What kind of touch makes you feel safest?",
+  "When do you feel most desired?",
+  "What's one small gesture that means a lot to you?",
+  "What's a way someone showed you love that you'll never forget?",
+  "Where's a place on your body that loves gentle attention?",
+  "What song makes you think about romance?",
+  "What does comfort look like to you after a long day?",
+  "What's something your partner does that always makes you smile?",
+  "Describe your perfect slow morning together.",
+  "What's a compliment you never get tired of hearing?",
+  "When do you feel most emotionally connected to someone?",
+  "What's a texture or sensation that relaxes you instantly?",
+  "What does being truly seen by someone feel like?",
+  "What's a date you've always dreamed about?",
+  "When do you feel the most beautiful or handsome?",
+  "What's a memory with your partner that makes you feel warm?",
+  "How do you like to be held?",
+  "What's a word that makes you melt when someone says it?",
+  "What's the most romantic thing someone could do for you tomorrow?",
+  "What kind of kiss do you like most?",
+  "When do you feel most safe being vulnerable?",
+  "What's a scent that makes you think of love?",
+  "Describe your perfect evening together in three words.",
+  "What's something you've never told your partner that you appreciate?",
+  "What part of your morning routine would you love to share?",
+  "What's a love language you wish you received more of?",
+  "When do you feel most playful with your partner?",
+  "What's a sound that makes you feel calm and loved?",
+  "What's the sweetest thing someone ever whispered to you?",
+  "What does the perfect hug feel like?",
+];
+
+let usedPrompts = [];
+function getDiscoveryPrompt() {
+  if (usedPrompts.length >= DISCOVERY_PROMPTS.length) usedPrompts = [];
+  const available = DISCOVERY_PROMPTS.filter(p => !usedPrompts.includes(p));
+  const pick = available[Math.floor(Math.random() * available.length)];
+  usedPrompts.push(pick);
+  return pick;
+}
+
+// ═══ MEMORY MODE PROMPTS (Wild Card 🧠) ═══
+const MEMORY_PROMPTS = [
+  "Recreate an early dating moment together.",
+  "Act out something you used to do more often.",
+  "Describe the first time you knew this was real.",
+  "Reenact how you two first met — your version.",
+  "Show your partner how they made you feel on your best date.",
+  "What's a silly inside joke between you two? Act it out.",
+  "Recreate a moment where your partner completely surprised you.",
+  "Act out your partner's most lovable habit.",
+  "Show how your partner comforts you without words.",
+  "Reenact a moment when you laughed so hard together you couldn't stop.",
+  "Describe the exact moment you fell in love — what were you doing?",
+  "Act out the way your partner says goodbye when they don't want to leave.",
+  "Recreate a quiet moment together that meant more than words.",
+  "Show your partner the way they look at you that makes your heart skip.",
+  "What's a trip or adventure you shared? Describe your favorite part.",
+  "Act out a lazy Sunday morning together — the good kind.",
+  "Recreate a moment when your partner stood up for you.",
+  "Show the way your partner dances when they think nobody's watching.",
+  "Describe a tough moment you got through together and what made it okay.",
+  "Act out the exact way your partner orders their favorite food.",
+  "Recreate the first time you held hands — who reached first?",
+  "Show the way your partner wakes you up in the morning.",
+  "Describe a smell, song, or place that instantly takes you back to an early memory together.",
+  "Reenact the moment one of you said 'I love you' for the first time.",
+  "Act out your partner's signature move when they're trying to make you laugh.",
+  "Recreate a moment when everything felt perfectly simple between you.",
+  "Show what your partner does when they're proud of you.",
+  "Describe a meal you cooked together — what went right or hilariously wrong?",
+  "Act out a road trip moment — the vibe, the music, the conversation.",
+  "Recreate a moment where you two made up after a disagreement. What broke the ice?",
+];
+let usedMemoryPrompts = [];
+function getMemoryPrompt() {
+  if (usedMemoryPrompts.length >= MEMORY_PROMPTS.length) usedMemoryPrompts = [];
+  const available = MEMORY_PROMPTS.filter(p => !usedMemoryPrompts.includes(p));
+  const pick = available[Math.floor(Math.random() * available.length)];
+  usedMemoryPrompts.push(pick);
+  return pick;
+}
+
+const WILD_CARDS_PER_LEVEL = 3;
+const VULN_CARDS_PER_LEVEL = 2;
+
+// ═══ VULNERABILITY PROMPTS (❤️‍🩹 Card) ═══
+const VULNERABILITY_PROMPTS = [
+  "Say one thing you appreciate about your partner's growth.",
+  "Share a memory you haven't talked about in a while.",
+  "What's something your partner does that you've never properly thanked them for?",
+  "Share a fear you don't usually talk about.",
+  "What's something you wish your partner knew about how you feel?",
+  "Describe a moment when your partner made you feel truly understood.",
+  "What's one thing you'd change about how you communicate together?",
+  "Share something you admire about your partner that you rarely say out loud.",
+  "When was the last time you felt really proud of your partner?",
+  "What's a part of yourself you're still learning to accept?",
+  "What's a dream you haven't shared yet?",
+  "Describe a moment you realized you were falling deeper in love.",
+  "What's something hard you went through that made your relationship stronger?",
+  "What's one way your partner has changed you for the better?",
+  "Share a moment when you felt most protected by your partner.",
+  "What's something you want more of in your relationship?",
+  "What's a small thing your partner does that makes an ordinary day special?",
+  "Tell your partner something you've been holding back — something kind.",
+  "What's a quality in your partner that you hope your children inherit?",
+  "Share a time your partner surprised you with their strength.",
+  "What's a part of your story together that you never want to forget?",
+  "What does forgiveness look like between you two?",
+  "Name one way you've grown since being with your partner.",
+  "What's something you want your partner to know about your love for them?",
+  "Describe a moment of silence between you that felt like a conversation.",
+  "What's one promise you want to make to each other right now?",
+  "Share something about your childhood that shapes how you love today.",
+  "What makes you feel most grateful about this relationship?",
+  "What's a boundary you're learning to set, and how can your partner support you?",
+  "Tell your partner the thing you find most beautiful about who they are — not what they look like.",
+];
+let usedVulnPrompts = [];
+function getVulnPrompt() {
+  if (usedVulnPrompts.length >= VULNERABILITY_PROMPTS.length) usedVulnPrompts = [];
+  const available = VULNERABILITY_PROMPTS.filter(p => !usedVulnPrompts.includes(p));
+  const pick = available[Math.floor(Math.random() * available.length)];
+  usedVulnPrompts.push(pick);
+  return pick;
+}
+
+// ═══ CONNECTION CHECK-IN QUESTIONS ═══
+const CHECKIN_PRE_QUESTIONS = [
+  "How connected do you feel to each other right now?",
+  "How open are you feeling in this moment?",
+  "How comfortable are you being vulnerable right now?",
+  "How playful do you feel together tonight?",
+  "How present are you in this moment with your partner?",
+  "How safe do you feel to be yourself right now?",
+  "How excited are you to discover something new about each other?",
+  "How relaxed do you feel with each other right now?",
+  "How much trust do you feel between you in this moment?",
+  "How much joy are you carrying into this moment together?",
+];
+const CHECKIN_POST_QUESTIONS = [
+  "How connected do you feel after playing together?",
+  "Did you learn something new about your partner?",
+  "How much closer do you feel right now?",
+  "How seen and appreciated do you feel after this?",
+  "Did this bring out a side of your partner you don't see enough?",
+  "How warm do you feel toward each other right now?",
+  "Did anything surprise you about your partner tonight?",
+  "How much fun did you have together?",
+  "Do you feel more in sync with your partner now?",
+  "How loved do you feel in this moment?",
+];
+
+let usedPreQs =[], 
+    usedPostQs = [];
+function getCheckinQ(pool, used) {
+  if(used.length >= pool.length) used.length = 0;
+  const avail = pool.filter(q => !used.includes(q));
+  const pick = avail[Math.floor(Math.random()*avail.length)];
+  used.push(pick); 
+  return pick;
+}
+
+function buildCheckinScale(containerId, btnId){
+  const container=document.querySelector (containerId);
+  const btn=document.querySelector (btnId);
+  container.innerHTML='';
+  const hearts = ['🤍', '🤍', '🤍', '🩵', '💙', '💛', '💛', '🧡', '❤️', '❤️‍🔥'];
+  hearts.forEach((h, i) => {
+    const b = document.createElement('button'); 
+      b.className= "checkin-btn";
+      b.textContent=h;b.dataset.val= i+1;
+      b. addEventListener('click',() => {
+      container.querySelectorAll('.checkin-btn').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected'); 
+      btn.disabled=false;
+    });
+    container.appendChild(b);
+  });
+} 
+
+// ═══ LEVELS ═══
+const LEVELS = [
+  { name: 'Dating',
+    cssClass:'dating', 
+    icon:'💕', 
+    desc:'Sweet and flirty - just gettingwarmed up', 
+    maxMoves: 35,
+    turnTime: 20,
+    pairs: [
+      ["🫱", "🫲", "Hold my hand?"],
+      ["🚘", "🧭", "Go on an adventure?"],
+      ["🎼", "🎸", "Music concert?"],
+      ["🫖", "📚", "Tea & Bookstore?"],
+      ["🍔", "🎮", "Burgers & Gaming"]
+      ["🍽️", "🎬", "Dinner & Movie?"],
+      ["☕️", "🥯", "Coffee & Bagel?"],
+      ["🌶️", "🍹", "Grab a Drink?"],
+      ["🎨", "🍷", "Paint & Sip?"],
+      ["🍕", "🎳", "Pizza & Bowling?"]]},
+
+  { name: 'Honeymoon Phase',
+    cssClass:'honeymoon', 
+    icon:'❤️‍🔥', 
+    desc:'Things have heated up', 
+    maxMoves: 30,
+    turnTime: 18,
+    pairs: [
+      ["🫳", "👣", " Rub my feet"],
+      ["🫵", "💆‍♀️", "Massage Me Slowly"],
+      ["👃", "👤", "Lets bump noses"],
+      ["🇫🇷", "💋", "French Kiss"],
+      ["🎥", "❄️", "Netflix & Chill"],
+      ["💋", "👂", "Kiss my ears"],
+      ["💋", "🔙", "Kiss the arch of my back, slow and deliberate"],
+      ["👆", "🦵", "Slowly run your finger up my legs"],
+      ["🤗", "⁐", "Hold me close"]
+      ["🕺", "🎵", "Dance with me"]]},
+
+ { name: 'Committed',
+    cssClass:'committed', 
+    icon:'💞', 
+    desc:'Deep Connection', 
+    maxMoves: 28,
+    turnTime: 16,
+    pairs: [
+      ["💋", "🐌", "Kiss me long and Slow"],
+      ["👅", "🍯", "Taste my honeypot"],
+      ["✊", "🍆", "Hand Job"],
+      ["🎭", "🛏️", "Roleplay"],
+      ["💋", "🔙", "Kiss the arch of my back, slow and deliberate"],
+      ["🤤", "🚿", "Have me drooling in the shower"],
+      ["💨", "🍆", "Blow my mind"],
+      ["🧥", "💃", "Dance for me naked"],
+      ["🚫🫣", "😮", "No peeking, surprise me"],
+      ["🫳", "🐈", "Rub my cat"]]},
+
+ { name: 'Married',
+    cssClass:'married', 
+    icon:'💍', 
+    desc:'We are one!', 
+    maxMoves: 25,
+    turnTime: 14,
+    pairs: [
+      ["✊", "🍆", "Hand Job"],
+      ["🧥", "🫠", "Show me some skin"],
+      ["🖖", "🌮", "Rub my taco"],
+      ["🍑","👏", "Clap that ass!"],
+      ["💋", "🐌", "Kiss me long and slow"],
+      ["💦", "😝", "Sit on my face"],
+      ["🤯", "🚘", "Blow my mind in the car"],
+      ["🎭", "🛏️", "Roleplay"],
+      ["👅", "🍯", "Taste my honeypot"],
+      ["🤼", "🌙", "Lets wrestle under the moonlight"]]},
+
+   { name: 'Child at Heart',
+    cssClass:'childatheart', 
+    icon:'🦄', 
+    desc:'Silly playful - no pressure', 
+    maxMoves: 35,
+    turnTime: 22,
+    pairs: [
+      ['🧸', '🤗', 'Bear Hug'],
+      ['❤️', '✉️', 'Love Letter'],
+      ['🗣️', '👂', 'Whisper sweet nothings in my ear'],
+      ['🫧', '🪮', 'Wash my hair'],
+      ['🍳', '🧑‍🍳', 'Cook with me'],
+      ['🪶', '🥊', 'Pillow Fight'],
+      ['🤗', '😊', 'Cuddlefest'],
+      ['🧦', '🏃', 'Sock slide race'],
+      ['🙂', '🎨', 'Paint my face'],
+      ['👀', '😂', 'Staring Contest']]}
+  ];
+
+let state = {
+  numPlayers: 0,
+  currentLevel: 0,
+  scores: [],
+  currentPlayer: 0,
+  firstCard: null,
+  secondCard: null,
+  checking: false, 
+  matchedPairs: 0,
+  movesTaken: 0,
+  timeLeft: 0,
+  timerInterval: null,
+  timerStarted: false,
+  gameOver: false,
+  deck: [],
+  foundPairs: new Set(),
+  paused: false,
+  dateChecklist:[],
+};
+
+// Age Gate
+const AGE_TIME_LIMIT = 20;
+let ageTimer = AGE_TIME_LIMIT,
+    ageInterval = null,
+    ageExpired = false;
+
+const dobMonth = document.querySelector('#dob-month'), 
+      dobDay = document.querySelector('#dob-day'),
+      dobYear = document.querySelector('#dob-year'),
+      ageError = document.querySelector('#age-error'),
+      btnVerify = document.querySelector('#btn-verify-age');
+
+// Populate selects
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+      months.forEach ((m, i) => {const o= document.createElement('option');o.value= i + 1; o.textContent= m; dobMonth.appendChild(o);});
+      for(let d = 1; d <= 31; d++) {const o= document.createElement('option');o.value = d; o.textContent= d; dobDay.appendChild(o);} 
+
+const curYear = new Date().getFullYear();
+for(let y=curYear; y >= curYear - 100; y--) {const o= document.createElement('option');o.value = y; o.textContent = y; dobYear.appendChild(o);}
+
+function startAgeTimer() {
+  ageTimer = AGE_TIME_LIMIT;
+  ageExpired = false;
+  ageInterval = setInterval(() => {
+    ageTimer--;
+    if (ageTimer <= 0) {
+      clearInterval(ageInterval);
+      ageExpired = true;
+      ageError.textContent = "⏰ Time's up! If you know your birthday, that shoud not take that long.";
+      btnVerify.diabled = true;
+      dobMonth.disabled = true;
+      dobDay.disabled = true;
+      dobYear.disabled = true;
+      setTimeout(() => {
+        document.querySelector('#age-gate').classList.remove('visible');
+        document.querySelector('#blocked-screen').classList.add('visible');
+      }, 2500);
+    }
+  }, 1000);
+}
+
+function checkDobComplete() {
+  if (ageExpired) return;
+  const m = dobMonth.value,
+        d = dobDay.value,
+        y = dobYear.value;
+        btnVerify.disabled = !(m && d && y);
+        if(m && d && y) clearInterval(ageInterval);
+}
+
+[dobMonth, dobDay, dob].forEach(s => s.addEventListener('change', checkDobComplete));
+
+// Start timer when first select is touched
+let ageTimerStarted = false;
+[dobMonth, dobDay, dobYear].forEach(s => s.addEventListener('focus', () => { if(!ageTimerStarted){ageTimerStarted = true; startAgeTimer();}
+}, {once:false}));
+
+btnVerify.addEventListener('click', () => {
+  const m = parseInt(dobMonth.value),
+        d = parseInt(dobDay.value),
+        y = parseInt(dobYear.value);
+  if (!m || !d || !y) return;
+  const dob = new Date(y, m-1, d);
+  const today = new Date();
+  let age = today.getFullYear() -dob.getFullYear();
+  const monthDiff = today.getMonth() -dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+  
+  if (age < 18) {
+    ageError.textContent = "You must be 18 or older to play.";
+    clearInterval(ageInterval);
+    setTimeout(() => {
+      document.querySelector('#age-gate').classList.remove('visible');
+      document.querySelector('#blocked-screen').classList.add('visible');
+    }, 1500);
+  } else if (age > 120 || dob > today) {
+    ageError.textContent = " Please enter a valid date of birth.";
+  } else {
+    clearInterval(ageInterval);
+      document.querySelector('#age-gate').classList.remove('visible');
+      document.querySelector('#setup-rules').classList.add('visible');
+  }
+});
+
+document.querySelector('#btn-age-no').addEventListener('click',() => {
+  clearInterval(ageInterval);
+  document.querySelector('#age-gate').classList.remove('visible');
+  document.querySelector('#blocked-screen').classList.add('visible');
+});
+
+// ═══ GROUND RULES ═══
+const consentCb = document.querySelector('#consent-checkbox'),
+      btnRulesNext = document.querySelector('#btn-rules-next');
+      consentCb.addEventListener('change', () => {
+        btnRulesNext.disabled = !consentCb.checked;});
+        btnRulesNext.addEventListener('click', () => {
+          if (!consentCb.checked) return;
+          document.querySelector('#setup-rules').classList.remove('visible');
+          document.querySelector('#setup-players').classList.add('visible');
+        });
+
+// Player Count
+let selectedCount = 0,
+    selectedLevel = -1,
+    popupOpen = false;
+
+const btnToLevel = document.querySelector('#btn-to-level');
+      document.querySelectorAll('#player-count-options .setup-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#player-count-options .setup-btn').forEach(b => b.classList.remove('selected'));
+          btn.classListadd('selected');
+          selectedCount = parseInt(btn.dataset.count);
+          btnToLevel.disabled = false;
+        });
+      });
+
+      btnToLevel.addEventListener('click', () => {
+        if(!selectedCount) return;
+        document.querySelector('#setup_players').classList.remove('visible');
+        buildLevelSelect();
+        document.querySelector('#setup-level').classList.add('visible');
+      });
+
+// ═══ LEVEL SELECT ═══
+const UNLOCK_KEY = 'en_unlocked';
+const FREE_LEVEL = 0; // Dating is free
+const LEVEL_PRICES = [
+  null,     // 0: Dating — free
+  '$2.99',  // 1: Honeymoon
+  '$2.99',  // 2: Committed
+  '$2.99',  // 3: Married
+  '$2.99',  // 4: Child at Heart
+];
+const BUNDLE_PRICE = '$7.99';
+
+// Unlock codes — map code string to what it unlocks
+// 'all' unlocks everything, or array of level indices
+const UNLOCK_CODES = {
+  'LOVEUNLOCKED':   'all',
+  'NAUGHTYALL':     'all',
+  'HONEYMOON':      [1],
+  'COMMITTED':      [2],
+  'MARRIED':        [3],
+  'CHILDATHEART':   [4],
+};
+
+function getUnlockedLevels() {
+  try {
+    const stored = localStorage.getItem(UNLOCK_KEY);
+    if(!stored) return new Set([FREE_LEVEL]);
+    const parsed = JSON.parse(stored);
+    const s = new Set(parsed);
+    s.add(FREE_LEVEL); // Dating always free
+    return s;
+  } catch(e){ 
+    return new Set([FREE_LEVEL]);
+   }
+}
+
+function saveUnlockedLevels(set) {
+  try { 
+    localStorage.setItem(UNLOCK_KEY,JSON.stringify([...set])); 
+  } catch(e) {}
+}
+
+function unlockLevel(idx) {
+  const u = getUnlockedLevels(); 
+    u.add(idx); 
+    saveUnlockedLevels(u);
+}
+
+function unlockAll() {
+  const u = new Set(LEVELS.map((_, i) => i)); 
+  saveUnlockedLevels(u);
+}
+function isLevelUnlocked(idx) { 
+  return getUnlockedLevels().has(idx); 
+}
+
+// Purchase modal refs
+const purchaseModal = document.querySelector ('#purchase-modal');
+const purchaseIcon = document.querySelector ('#purchase-icon');
+const purchaseTitle = document.querySelector ('#purchase-title');
+const purchaseSub = document.querySelector ('#purchase-sub');
+const purchaseOptions = document.querySelector ('#purchase-options');
+const unlockCodeInput = document.querySelector ('#unlock-code-input');
+const btnCodeApply = document.querySelector ('#btn-code-apply');
+const unlockStatus = document.querySelector ('#unlock-status');
+const btnPurchaseClose = document.querySelector ('#btn-purchase-close');
+
+let purchaseTargetLevel = null;
+
+function showPurchaseModal(levelIdx) {
+  purchaseTargetLevel = levelIdx;
+  const lv = LEVELS[levelIdx];
+  purchaseIcon.textContent = lv.icon;
+  purchaseTitle.textContent = `Unlock ${lv.name}`;
+  purchaseSub.textContent = `${lv.desc}. Unlock this level to play — or grab them all at a discount.`;
+  unlockCodeInput.value = '';
+  unlockStatus.textContent = '';
+  unlockStatus.className = 'unlock-status';
+
+  // Build purchase options
+  purchaseOptions.innerHTML = '';
+
+  // Single level option
+  const singleOpt = document.createElement('div');
+  singleOpt.className = 'purchase-option';
+  singleOpt.innerHTML = `<div class="po-icon">${lv.icon}</div><div class="po-info"><div class="po-name">${lv.name}</div><div class="po-desc">Unlock this level only</div></div><div class="po-price">${LEVEL_PRICES[levelIdx]}</div>`;
+  singleOpt.addEventListener('click',() => handlePurchase('single',levelIdx));
+  purchaseOptions.appendChild(singleOpt);
+
+  // Bundle option — only show if not all unlocked
+  const unlocked = getUnlockedLevels();
+  const lockedCount = LEVELS.length-unlocked.size;
+  if(lockedCount>1) {
+    const bundleOpt = document.createElement('div');
+    bundleOpt.className = 'purchase-option highlight';
+    bundleOpt.innerHTML = `<div class="po-icon">✨</div><div class="po-info"><div class="po-name">Unlock All Levels</div><div class="po-desc">Honeymoon + Committed + Married + Child at Heart</div></div><div class="po-price">${BUNDLE_PRICE}</div>`;
+    bundleOpt.addEventListener('click',() => handlePurchase('bundle'));
+    purchaseOptions.appendChild(bundleOpt);
+  }
+
+  purchaseModal.classList.add('visible');
+}
+
+function handlePurchase(type,levelIdx) {
+  // ┌──────────────────────────────────────────────────┐
+  // │  INTEGRATION POINT                               │
+  // │  Replace this function body with your payment     │
+  // │  processor (Stripe, Gumroad, RevenueCat, etc.)   │
+  // │  On successful payment, call:                     │
+  // │    unlockLevel(idx) — for single level            │
+  // │    unlockAll()      — for bundle                  │
+  // │  Then call: onPurchaseComplete()                  │
+  // └──────────────────────────────────────────────────┘
+  const msg = type === 'bundle'
+    ?`This will open your payment page for the All Levels bundle (${BUNDLE_PRICE}).`
+    :`This will open your payment page for ${LEVELS[levelIdx].name} (${LEVEL_PRICES[levelIdx]}).`;
+  
+  unlockStatus.textContent = '🔗 Connect a payment provider (Stripe, Gumroad, etc.) to enable purchases. Use unlock codes for now.';
+  unlockStatus.className = 'unlock-status';
+}
+
+function onPurchaseComplete() {
+  purchaseModal.classList.remove('visible');
+  buildLevelSelect(); // Refresh cards to show unlocked state
+  unlockStatus.textContent = '';
+}
+
+// Unlock code handler
+btnCodeApply.addEventListener('click',() => {
+  const code = unlockCodeInput.value.trim().toUpperCase().replace(/[\s-]/g, '');
+  if(!code){ 
+    unlockStatus.textContent = 'Enter a code above'; 
+    unlockStatus.className = 'unlock-status error'; return;
+   }
+  
+  if(UNLOCK_CODES[code]) {
+    const target = UNLOCK_CODES[code];
+    if(target === 'all') {
+      unlockAll();
+      unlockStatus.textContent = '✨ All levels unlocked! Enjoy the full experience.';
+    } else {
+      target.forEach(i => unlockLevel(i));
+      const names = target.map(i => LEVELS[i].name).join(', ');
+      unlockStatus.textContent = `✨ ${names} unlocked!`;
+    }
+    unlockStatus.className = 'unlock-status success';
+    setTimeout(() => { 
+      purchaseModal.classList.remove('visible'); 
+      buildLevelSelect(); 
+    }, 1500);
+
+  } else {
+    unlockStatus.textContent = 'Invalid code. Check your code and try again.';
+    unlockStatus.className = 'unlock-status error';
+  }
+});
+
+btnPurchaseClose.addEventListener('click',() => {
+  purchaseModal.classList.remove('visible');
+});
+
+const levelGrid = document.querySelector ('level-select-grid'),
+btnStartGame = document.querySelector ('#btn-start-game');
+function buildLevelSelect() {
+  levelGrid.innerHTML = '';
+  const unlocked = getUnlockedLevels();
+  LEVELS.forEach((lv, idx) => {
+    const card = document.createElement('div');
+    const isLocked = !unlocked.has(idx);
+    card.className = 'level-card'+(isLocked?' locked':'');
+    card.setAttribute('data-level', idx);
+    card.setAttribute('tabindex', '0');card.setAttribute('role', 'button');
+    card.setAttribute('aria-label',`${lv.name}: ${lv.desc}${isLocked?' (Locked)':''}`);
+    let badge = '';
+    if(idx === FREE_LEVEL) badge = '<div class="lc-free-tag">FREE</div>';
+    else if(isLocked) badge = '<div class="lc-lock">🔒</div>';
+    card.innerHTML =`${badge}<div class="lc-icon">${lv.icon}</div><div class="lc-name">${lv.name}</div><div class="lc-desc">${lv.desc}</div>`;
+    card.addEventListener('click',() => {
+      if(isLocked) { 
+        showPurchaseModal(idx);
+       }
+      else { 
+        selectLevel(idx); 
+      }
+    });
+
+    card.addEventListener('keydown', e => {
+      if(e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if(isLocked){ 
+          showPurchaseModal(idx); 
+        }
+        else { 
+          selectLevel(idx); 
+        }
+      }
+    });
+    levelGrid.appendChild(card);
+  });
+}
+
+function selectLevel(idx) {
+  document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.level-card[data-level="${idx}"]`).classList.add('selected');
+  selectedLevel=idx;btnStartGame.disabled = false;
+}
+const checkinPre = document.querySelector('#checkin-pre'),
+      checkinPost = document.querySelector('#checkin-post'),
+      checkinPreQ = document.querySelector('#checkin-pre-q'),
+      checkinPostQ = document.querySelector('#checkin-post-q'),
+      btnCheckinPreNext = document.querySelector('#checkin-pre-next'),
+      btnCheckinPostNext = document.querySelector('#checkin-post-next');
+  btnStartGame.addEventListener('click', () => {
+  if(selectedLevel < 0) return;
+  state.numPlayers = selectedCount;
+  state.scores = Array(selectedCount).fill(0);
+  document.querySelector('#setup-level').classList.remove('visible');
+
+  // Show pre-game check-in
+// Show Pre-game check in
+  checkinPreQ.textContent = getCheckingQ(CHECKIN_PRE_QUESTIONS, usedPreQs);
+  buildCheckinScale('checkin-pre-scale', 'btn-checkin-pre-next');
+  btnCheckinPreNext.disabled = true;
+  checkinPre.classList.add('visible');
+});
+
+btnCheckinPreNext.addEventListener('click', () => {
+  const sel = document.querySelector('#checkin-pre-scale .checkin-btn-selected');
+  state._preQ = checkinPreQ.textContent;
+  state._preRating = sel?parseInt(sel.dataset.val): 0;
+  checkinPre.classList.remove('visible');
+  startLevel(selectedLevel);
+});
+
+// ═══ DOM REFS ═══
+const gameArea = document.querySelector('#game-area'),
+      gameBoard = document.querySelector('#board'),
+      displayTimer = document.querySelector('#timer'),
+      moveValue = document.querySelector('#moves'),
+      maxMoves = document.querySelector('#max-moves'),
+      matchedCount = document.querySelector('#matched-count'),
+      totalPairs = document. querySelector('#total-pairs'),
+      playerScores = document. querySelector('#player-scores'),
+      phraseDisplay = document.querySelector('#phrase-display'),
+      levelBadge = document.querySelector('#level-badge'),
+      actModal = document.querySelector('#act-modal'),
+      modalEmoji = document.querySelector('#modal-emoji'),
+      modalName = document.querySelector('#modal-match-name'),
+      modalPlayer = document.querySelector('#modal-player'),
+      discoveryText = document.querySelector('#discovery-text'),
+      btnActDone = document.querySelector('#btn-act-done'),
+      btnActSkip = document.querySelector('#btn-act-skip'),
+      pauseModal = document.querySelector('#pause-modal'),
+      btnResume = document.querySelector('#btn-resume'),
+      btnEndEarly = document.querySelector('#btn-end-early'),
+      endScreen = document.querySelector('#end-screen'),
+      endTitle = document.querySelector('#end-title'),
+      endScores = document.querySelector('#end-scores'),
+      matchesFab = document.querySelector('#matches-fab'),
+      matchesPopup = document.querySelector('#matches-popup'),
+      matchesBody = document.querySelector('#matches-popup-body'),
+      matchesClose = document.querySelector('#matches-popup-close'),
+      safewordFab = document.querySelector('#safe-word-fab'),
+      gameFooter = document.querySelector('#game-footer');
+
+const memoryModal = document.querySelector('#memory-modal'),
+      memoryPromptText = document.querySelector('#memory-prompt-text'),
+      memoryPlayer = document.querySelector('#memory-player'),
+      btmMemoryDone = document.querySelector('#btn-memory-done'),
+      btnMemorySkip = document.querySelector('#btn-memory-skip');
+
+const vulnModal = document.querySelector('#vuln-modal'),
+      vulnPromptText = document.querySelector('#vuln-prompt-text'),
+      vulnPlayer = document.querySelector('#vuln-player'),
+      btnVulnDone = document.querySelector('#btn-vuln-done'),
+      btnVulnSkip = document.querySelector('#btn-vuln-skip');      
+
+
+function startLevel(li) {
+  const lv = LEVELS[li];
+  Object.assign(state, {currentLevel:li, currentPlayer: 0, firstCard: null, secondCard: null, checking: false,
+    matchedPairs: 0, movesTaken: 0, timerStarted: false, gameOver: false, paused: false, foundPairs: new Set(), dateChecklist:[]});
+
+  clearInterval(state.timerInterval);
+      usedPrompts = [];
+      usedMemoryPrompts = [];
+      usedVulnPrompts = [];
+      state.deck = [];
+
+  for(const p of lv.pairs) {
+    state.deck.push({emoji : p[0], pairName: p[2], isWild: false});
+    state.deck.push({emoji: p[1], pairName: p[2], isWild: false});
+}
+
+  for(let w = 0; w < WILD_CARDS_PER_LEVEL; w++) {
+      state.deck.push({emoji: '🧠', pairName: '__WILD__', isWild: true, isVuln: false});     
+}
+  for(let w = 0; v < VULN_CARDS_PER_LEVEL; v++) {
+      state.deck.push({emoji: '❤️‍🩹', pairName: '__VULN__', isWild: false, isVuln: true});     
+}
+
+  shuffle(state.deck);
+  endScreen.classList.remove('visible');
+  gameArea.style.display = flex;
+  gameFooter.style.display = 'block';
+  matchesFab.classList.add('show');
+  safeWordFab.classList.add('show');
+  levelBadge.textContent = `${lv.icon} ${lv.name}`;
+  levelBadge.className = `level-badge ${lv.cssClass}`;
+  maxMoves.textContent = lv.maxMoves;
+  totalPairs.textContent = lv.pairs.length;
+  moves.textContent = '0';
+  matchedCount.textContent = '0';
+  timer.textContent = lv.turnTime;
+  timer.classList.remove('warning');
+  phrase.textContent = '';
+  gameBoard.className = state.deck.length <= 16 ? 'board cols-4':'board cols-5';
+  buildBoard();
+  buildPlayerScores();
+  buildMatchesPopup(lv.pairs);
+  highlightActivePlayer();
+}
+
+function shuffle(a) {
+  for(let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i+1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }}
+
+function buildBoard() {
+  boardEl.innerHTML = '';
+  state.deck.forEach((item,idx)=>{
+    const c=document.createElement('div');
+    let cls='card';
+    if(item.isWild) cls+=' wild-card';
+    if(item.isVuln) cls+=' vuln-card';
+    c.className=cls; c.dataset.index=idx; c.dataset.pairName=item.pairName;
+    if(item.isWild) c.dataset.wild='true';
+    if(item.isVuln) c.dataset.vuln='true';
+    c.setAttribute('tabindex','0');c.setAttribute('role','button');c.setAttribute('aria-label','Hidden card');
+    c.innerHTML=`<span class="emoji">${item.emoji}</span>`;
+    c.addEventListener('click',onCardTap);
+    c.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();onCardTap(e);}});
+    boardEl.appendChild(c);
+  });
+}
+function buildPlayerScores(){
+  playerScoresEl.innerHTML='';
+  for(let i=0;i<state.numPlayers;i++){const t=document.createElement('div');t.className=`player-tag player-colors-${i}`;t.id=`player-tag-${i}`;t.textContent=`P${i+1}: ${state.scores[i]}`;playerScoresEl.appendChild(t);}
+}
+function highlightActivePlayer(){for(let i=0;i<state.numPlayers;i++){const e=document.querySelector (`player-tag-${i}`);if(e)e.classList.toggle('active',i===state.currentPlayer);}}
+function updateScoreDisplay(){for(let i=0;i<state.numPlayers;i++){const e=document.querySelector (`player-tag-${i}`);if(e)e.textContent=`P${i+1}: ${state.scores[i]}`;}}
+
+// ═══ MATCHES POPUP ═══
+function buildMatchesPopup(pairs){
+  matchesBody.innerHTML='';
+  pairs.forEach((d,i)=>{const el=document.createElement('div');el.className='match-ref-item';el.id=`mri-${i}`;
+    el.innerHTML=`<span class="match-ref-emojis">${d[0]}${d[1]}</span><span class="mri-name">${d[2]}</span>`;matchesBody.appendChild(el);});
+}
+function markMatchFound(pn){
+  state.foundPairs.add(pn);
+  LEVELS[state.currentLevel].pairs.forEach((d,i)=>{if(d[2]===pn){const el=document.querySelector (`mri-${i}`);
+    if(el&&!el.classList.contains('found')){el.classList.add('found');const c=document.createElement('span');c.className='mri-check';c.textContent='✓';el.appendChild(c);}}});
+}
+matchesFab.addEventListener('click',()=>{popupOpen=!popupOpen;matchesPopup.classList.toggle('visible',popupOpen);});
+matchesClose.addEventListener('click',()=>{popupOpen=false;matchesPopup.classList.remove('visible');});
+document.addEventListener('click',e=>{if(popupOpen&&!matchesPopup.contains(e.target)&&e.target!==matchesFab){popupOpen=false;matchesPopup.classList.remove('visible');}});
+
+// ═══ PAUSE ═══
+safeWordFab.addEventListener('click',()=>{if(state.gameOver)return;state.paused=true;clearInterval(state.timerInterval);pauseModal.classList.add('visible');});
+btnResume.addEventListener('click',()=>{pauseModal.classList.remove('visible');state.paused=false;
+  if(state.timerStarted&&state.timeLeft>0){state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;if(state.timeLeft<=5)timerEl.classList.add('warning');if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);}});
+btnEndEarly.addEventListener('click',()=>{pauseModal.classList.remove('visible');state.paused=false;showLevelEnd();});
+
+// ═══ CARD TAP ═══
+function onCardTap(e){
+  if(state.gameOver||state.checking||state.paused)return;
+  const card=e.currentTarget;if(card.classList.contains('flipped')||card.classList.contains('matched')||card.classList.contains('wild-used')||card.classList.contains('vuln-used'))return;
+  if(!state.timerStarted){startTimer();state.timerStarted=true;}
+  card.classList.add('flipped');card.setAttribute('aria-label',card.querySelector('.emoji').textContent);
+
+  // ── WILD CARD: trigger Memory Mode ──
+  if(card.dataset.wild==='true'){
+    state.checking=true; clearInterval(state.timerInterval);
+    card.classList.add('wild-used');
+    phraseEl.textContent='🧠 Memory Mode!'; phraseEl.style.color='var(--electric)';
+    memoryPlayerEl.textContent=`Player ${state.currentPlayer+1} — Share a memory`;
+    const memPrompt=getMemoryPrompt();
+    memoryPromptText.textContent=memPrompt;
+    if(state.currentLevel===0) state.dateChecklist.push({emoji1:'🧠',emoji2:'',name:'Memory Mode',discovery:memPrompt});
+    memoryModal.classList.add('visible');
+    const closeMemory=()=>{
+      memoryModal.classList.remove('visible'); phraseEl.textContent='';
+      state.checking=false;
+      if(state.timerStarted&&state.timeLeft>0){
+        state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;
+          if(state.timeLeft<=5)timerEl.classList.add('warning');
+          if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);
+      }
+    };
+    btnMemoryDone.onclick=closeMemory;
+    btnMemorySkip.onclick=closeMemory;
+    return;
+  }
+
+  // ── VULNERABILITY CARD: trigger Vulnerability prompt ──
+  if(card.dataset.vuln==='true'){
+    state.checking=true; clearInterval(state.timerInterval);
+    card.classList.add('vuln-used');
+    phraseEl.textContent='❤️‍🩹 Vulnerability Card!'; phraseEl.style.color='var(--rose)';
+    vulnPlayerEl.textContent=`Player ${state.currentPlayer+1} — Open your heart`;
+    const vulnPrompt=getVulnPrompt();
+    vulnPromptText.textContent=vulnPrompt;
+    if(state.currentLevel===0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'',name:'Vulnerability Moment',discovery:vulnPrompt});
+    vulnModal.classList.add('visible');
+    const closeVuln=()=>{
+      vulnModal.classList.remove('visible'); phraseEl.textContent='';
+      state.checking=false;
+      if(state.timerStarted&&state.timeLeft>0){
+        state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;
+          if(state.timeLeft<=5)timerEl.classList.add('warning');
+          if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);
+      }
+    };
+    btnVulnDone.onclick=closeVuln;
+    btnVulnSkip.onclick=closeVuln;
+    return;
+  }
+
+  if(!state.firstCard){state.firstCard=card;}else{state.secondCard=card;checkMatch();}
+}
+function getMate(emoji){for(const d of LEVELS[state.currentLevel].pairs){if(d[0]===emoji||d[1]===emoji)return d[2];}return null;}
+
+function checkMatch(){
+  state.checking=true;clearInterval(state.timerInterval);
+  const e1=state.firstCard.querySelector('.emoji').textContent,e2=state.secondCard.querySelector('.emoji').textContent;
+  const m1=getMate(e1),m2=getMate(e2);
+  const isMatch=(m1===m2&&m1!==null&&state.firstCard!==state.secondCard);
+  if(isMatch){
+    state.firstCard.classList.add('matched');state.secondCard.classList.add('matched');
+    state.matchedPairs++;state.scores[state.currentPlayer]++;
+    matchedCountEl.textContent=state.matchedPairs;updateScoreDisplay();markMatchFound(m1);
+    popupOpen=false;matchesPopup.classList.remove('visible');
+
+    // ── DATING LEVEL: no act-it-out, build date checklist ──
+    if(state.currentLevel===0){
+      state.dateChecklist.push({emoji1:e1,emoji2:e2,name:m1,discovery:getDiscoveryPrompt()});
+      phraseEl.textContent=`✨ ${m1} added to your date!`;phraseEl.style.color='var(--honey)';
+      state.firstCard=null;state.secondCard=null;state.timerStarted=false;
+      state.checking=false;
+      setTimeout(()=>{phraseEl.textContent='';if(checkLevelEnd())return;},1200);
+    } else {
+      // ── ALL OTHER LEVELS: show act-it-out modal ──
+      phraseEl.textContent=`🔥 ${m1}!`;phraseEl.style.color='var(--honey)';
+      modalEmoji.textContent=`${e1} ${e2}`;modalName.textContent=m1;
+      modalPlayer.textContent=`Player ${state.currentPlayer+1} — Your turn! 😏`;
+      discoveryText.textContent=getDiscoveryPrompt();
+      actModal.classList.add('visible');
+      state.firstCard=null;state.secondCard=null;state.timerStarted=false;
+      const close=()=>{actModal.classList.remove('visible');phraseEl.textContent='';state.checking=false;if(checkLevelEnd())return;};
+      btnActDone.onclick=close;btnActSkip.onclick=close;
+    }
+  }else{
+    phraseEl.textContent='Not a match 🙈';phraseEl.style.color='var(--coral)';
+    setTimeout(()=>{
+      if(state.firstCard){state.firstCard.classList.remove('flipped');state.firstCard.setAttribute('aria-label','Hidden card');}
+      if(state.secondCard){state.secondCard.classList.remove('flipped');state.secondCard.setAttribute('aria-label','Hidden card');}
+      state.firstCard=null;state.secondCard=null;state.checking=false;state.timerStarted=false;
+      state.movesTaken++;movesEl.textContent=state.movesTaken;phraseEl.textContent='';
+      if(checkLevelEnd())return;nextPlayer();
+    },1200);
+  }
+}
+
+function startTimer(){
+  const lv=LEVELS[state.currentLevel];state.timeLeft=lv.turnTime;timerEl.textContent=state.timeLeft;timerEl.classList.remove('warning');
+  clearInterval(state.timerInterval);
+  state.timerInterval=setInterval(()=>{state.timeLeft--;timerEl.textContent=state.timeLeft;if(state.timeLeft<=5)timerEl.classList.add('warning');if(state.timeLeft<=0){clearInterval(state.timerInterval);onTimeUp();}},1000);
+}
+function onTimeUp(){
+  phraseEl.textContent='Too slow! ⏰';phraseEl.style.color='var(--ember)';
+  if(state.firstCard){state.firstCard.classList.remove('flipped');state.firstCard.setAttribute('aria-label','Hidden card');}
+  if(state.secondCard){state.secondCard.classList.remove('flipped');state.secondCard.setAttribute('aria-label','Hidden card');}
+  state.firstCard=null;state.secondCard=null;state.checking=false;state.timerStarted=false;
+  state.movesTaken++;movesEl.textContent=state.movesTaken;
+  setTimeout(()=>{phraseEl.textContent='';if(checkLevelEnd())return;nextPlayer();},800);
+}
+function nextPlayer(){state.currentPlayer=(state.currentPlayer+1)%state.numPlayers;highlightActivePlayer();timerEl.textContent=LEVELS[state.currentLevel].turnTime;timerEl.classList.remove('warning');}
+function checkLevelEnd(){const lv=LEVELS[state.currentLevel];if(state.matchedPairs>=lv.pairs.length||state.movesTaken>=lv.maxMoves){showLevelEnd();return true;}return false;}
+function showLevelEnd(){
+  state.gameOver=true;clearInterval(state.timerInterval);
+  gameArea.style.display='none';gameFooter.style.display='none';
+  matchesFab.classList.remove('show');safeWordFab.classList.remove('show');
+  popupOpen=false;matchesPopup.classList.remove('visible');
+
+  // Store results for after check-in
+  const lv=LEVELS[state.currentLevel];
+  state._endTitle=state.matchedPairs>=lv.pairs.length
+    ?(state.currentLevel===0?`💕 Date Night Ready!`:`🔥 ${lv.name} Complete!`)
+    :'⏰ Out of Moves!';
+  let html='';const mx=Math.max(...state.scores);
+  for(let i=0;i<state.numPlayers;i++){const w=state.scores[i]===mx;html+=`<div class="${w?'winner':''}">Player ${i+1}: ${state.scores[i]} points${w?' 👑':''}</div>`;}
+  state._endScores=html;
+
+  // Show post-game check-in
+  checkinPostQ.textContent=getCheckinQ(CHECKIN_POST_QUESTIONS,usedPostQs);
+  buildCheckinScale('checkin-post-scale','btn-checkin-post-next');
+  btnCheckinPostNext.disabled=true;
+  checkinPost.classList.add('visible');
+}
+btnCheckinPostNext.addEventListener('click',()=>{
+  const sel=document.querySelector('#checkin-post-scale .checkin-btn.selected');
+  state._postQ=checkinPostQ.textContent;
+  state._postRating=sel?parseInt(sel.dataset.val):0;
+  checkinPost.classList.remove('visible');
+  endTitleEl.textContent=state._endTitle;
+  endScoresEl.innerHTML=state._endScores;
+
+  // Date checklist for Dating level
+  const checklistEl=document.querySelector ('date-checklist');
+  const checklistItems=document.querySelector ('date-checklist-items');
+  if(state.currentLevel===0 && state.dateChecklist.length>0){
+    checklistItems.innerHTML='';
+    state.dateChecklist.forEach((item,i)=>{
+      const row=document.createElement('div');
+      row.className='date-item';row.setAttribute('role','checkbox');row.setAttribute('aria-checked','false');
+      row.innerHTML=`<div class="date-item-check">✓</div><div class="date-item-emoji">${item.emoji1}</div><div class="date-item-content"><div class="date-item-name">${item.name}</div><div class="date-item-discovery">💬 ${item.discovery}</div></div>`;
+      row.addEventListener('click',()=>{
+        const checked=row.classList.toggle('checked');
+        row.setAttribute('aria-checked',checked?'true':'false');
+      });
+      checklistItems.appendChild(row);
+    });
+    checklistEl.style.display='block';
+  } else {
+    checklistEl.style.display='none';
+  }
+
+  // Save session if opted in
+  saveSessionIfEnabled();
+  endscreenEl.classList.add('visible');
+});
+
+document.querySelector ('btn-play-again').addEventListener('click',()=>{
+  state.scores=Array(state.numPlayers).fill(0);
+  endscreenEl.classList.remove('visible');
+  checkinPreQ.textContent=getCheckinQ(CHECKIN_PRE_QUESTIONS,usedPreQs);
+  buildCheckinScale('checkin-pre-scale','btn-checkin-pre-next');
+  btnCheckinPreNext.disabled=true;
+  checkinPre.classList.add('visible');
+});
+document.querySelector ('btn-restart').addEventListener('click',fullRestart);
+document.querySelector ('btn-reboot').addEventListener('click',fullRestart);
+
+function fullRestart(){
+  clearInterval(state.timerInterval);clearInterval(ageInterval);
+  state={numPlayers:0,currentLevel:0,scores:[],currentPlayer:0,firstCard:null,secondCard:null,checking:false,
+    matchedPairs:0,movesTaken:0,timeLeft:0,timerInterval:null,timerStarted:false,gameOver:false,deck:[],foundPairs:new Set(),paused:false,dateChecklist:[]};
+  selectedCount=0;selectedLevel=-1;ageTimerStarted=false;ageExpired=false;usedPrompts=[];usedMemoryPrompts=[];usedVulnPrompts=[];usedPreQs=[];usedPostQs=[];
+  gameArea.style.display='none';gameFooter.style.display='none';
+  endscreenEl.classList.remove('visible');actModal.classList.remove('visible');pauseModal.classList.remove('visible');memoryModal.classList.remove('visible');vulnModal.classList.remove('visible');
+  document.querySelector ('pw-modal').classList.remove('visible');
+  document.querySelector ('purchase-modal').classList.remove('visible');
+  checkinPre.classList.remove('visible');checkinPost.classList.remove('visible');
+  document.querySelector ('setup-level').classList.remove('visible');
+  document.querySelector ('setup-players').classList.remove('visible');
+  document.querySelector ('setup-rules').classList.remove('visible');
+  document.querySelector ('blocked-screen').classList.remove('visible');
+  matchesFab.classList.remove('show');safeWordFab.classList.remove('show');
+  popupOpen=false;matchesPopup.classList.remove('visible');
+  document.querySelectorAll('#player-count-options .setup-btn').forEach(b=>b.classList.remove('selected'));
+  btnToLevel.disabled=true;btnStartGame.disabled=true;btnRulesNext.disabled=true;consentCb.checked=false;
+  btnVerify.disabled=true;dobMonth.disabled=false;dobDay.disabled=false;dobYear.disabled=false;
+  dobMonth.value='';dobDay.value='';dobYear.value='';ageError.textContent='';
+  document.querySelector ('age-gate').classList.add('visible');
+}
+
+// ═══ PRIVACY & DATA CONTROLS ═══
+const STORAGE_KEY='en_sessions';
+const SAVE_PREF_KEY='en_save_enabled';
+const toggleSave=document.querySelector ('toggle-save');
+const btnExport=document.querySelector ('btn-export');
+const btnClear=document.querySelector ('btn-clear');
+const privacyStatus=document.querySelector ('privacy-status');
+const pwModal=document.querySelector ('pw-modal');
+const pwInput=document.querySelector ('pw-input');
+const btnPwGo=document.querySelector ('btn-pw-go');
+const btnPwCancel=document.querySelector ('btn-pw-cancel');
+
+// Init toggle from stored preference
+try { toggleSave.checked=localStorage.getItem(SAVE_PREF_KEY)==='true'; } catch(e){}
+updatePrivacyUI();
+
+toggleSave.addEventListener('change',()=>{
+  try {
+    if(toggleSave.checked){
+      localStorage.setItem(SAVE_PREF_KEY,'true');
+      privacyStatus.textContent='✓ Data will be saved locally after each game';
+    } else {
+      localStorage.setItem(SAVE_PREF_KEY,'false');
+      privacyStatus.textContent='Saving disabled — data stays in this session only';
+    }
+  } catch(e){ privacyStatus.textContent='⚠ localStorage not available in this browser'; }
+  updatePrivacyUI();
+});
+
+function updatePrivacyUI(){
+  let count=0;
+  try { const d=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); count=d.length; } catch(e){}
+  btnExport.disabled=count===0 && !hasCurrentSession();
+  btnClear.disabled=count===0;
+  if(count>0) privacyStatus.textContent=`${count} session${count>1?'s':''} saved on this device`;
+}
+
+function hasCurrentSession(){ return state._endTitle && state._endTitle.length>0; }
+
+function buildSessionData(){
+  const lv=LEVELS[state.currentLevel];
+  return {
+    date:new Date().toISOString(),
+    level:lv.name,
+    players:state.numPlayers,
+    scores:[...state.scores],
+    matchedPairs:state.matchedPairs,
+    totalPairs:lv.pairs.length,
+    movesTaken:state.movesTaken,
+    maxMoves:lv.maxMoves,
+    preCheckin:{question:state._preQ||'',rating:state._preRating||0},
+    postCheckin:{question:state._postQ||'',rating:state._postRating||0},
+    checklist:state.dateChecklist.map(c=>({name:c.name,emoji:c.emoji1,discovery:c.discovery})),
+  };
+}
+
+function saveSessionIfEnabled(){
+  if(!toggleSave.checked) return;
+  try {
+    const sessions=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]');
+    sessions.push(buildSessionData());
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(sessions));
+    updatePrivacyUI();
+  } catch(e){ privacyStatus.textContent='⚠ Could not save — storage may be full'; }
+}
+
+// ── Clear Data ──
+btnClear.addEventListener('click',()=>{
+  if(!confirm('Clear ALL saved game data from this device? This cannot be undone.')) return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(SAVE_PREF_KEY);
+    toggleSave.checked=false;
+    privacyStatus.textContent='✓ All data cleared';
+    updatePrivacyUI();
+  } catch(e){ privacyStatus.textContent='⚠ Could not clear data'; }
+});
+
+// ── Export Encrypted PDF ──
+btnExport.addEventListener('click',()=>{
+  pwInput.value='';btnPwGo.disabled=true;
+  pwModal.classList.add('visible');
+  pwInput.focus();
+});
+pwInput.addEventListener('input',()=>{ btnPwGo.disabled=pwInput.value.length<4; });
+btnPwCancel.addEventListener('click',()=>{ pwModal.classList.remove('visible'); });
+
+btnPwGo.addEventListener('click',()=>{
+  const password=pwInput.value;
+  if(password.length<4) return;
+  pwModal.classList.remove('visible');
+
+  // Gather all data: saved sessions + current session
+  let sessions=[];
+  try { sessions=JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch(e){}
+  if(hasCurrentSession()){
+    const current=buildSessionData();
+    const isDup=sessions.some(s=>s.date===current.date);
+    if(!isDup) sessions.push(current);
+  }
+  if(sessions.length===0){ privacyStatus.textContent='No data to export'; return; }
+
+  generateEncryptedPDF(sessions,password);
+});
+
+function generateEncryptedPDF(sessions,password){
+  try {
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({format:'a4',unit:'mm'});
+    const pw=doc.internal.pageSize.getWidth();
+    const margin=18;
+    const maxW=pw-margin*2;
+    let y=20;
+
+    function checkPage(need){
+      if(y+need>275){doc.addPage();y=20;}
+    }
+
+    // Title page
+    doc.setFont('helvetica','bold');doc.setFontSize(22);doc.setTextColor(90,20,60);
+    doc.text('Explicitly Naughty',pw/2,y,{align:'center'});y+=10;
+    doc.setFontSize(11);doc.setFont('helvetica','normal');doc.setTextColor(120,80,100);
+    doc.text('Private Game Journal — Encrypted Export',pw/2,y,{align:'center'});y+=6;
+    doc.setFontSize(8);doc.setTextColor(160,130,150);
+    doc.text(`Exported: ${new Date().toLocaleString()}`,pw/2,y,{align:'center'});y+=4;
+    doc.text(`Sessions: ${sessions.length}`,pw/2,y,{align:'center'});y+=12;
+    doc.setDrawColor(200,160,180);doc.line(margin,y,pw-margin,y);y+=10;
+
+    sessions.forEach((s,idx)=>{
+      checkPage(60);
+      // Session header
+      doc.setFont('helvetica','bold');doc.setFontSize(13);doc.setTextColor(90,20,60);
+      doc.text(`Session ${idx+1}: ${s.level}`,margin,y);y+=6;
+      doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(100,80,90);
+      const dt=new Date(s.date);
+      doc.text(`${dt.toLocaleDateString()} at ${dt.toLocaleTimeString()} — ${s.players} player${s.players>1?'s':''}`,margin,y);y+=6;
+
+      // Scores
+      doc.setFontSize(9);doc.setTextColor(80,60,70);
+      const scoreStr=s.scores.map((sc,i)=>`Player ${i+1}: ${sc}`).join('  |  ');
+      doc.text(`Scores: ${scoreStr}   (${s.matchedPairs}/${s.totalPairs} pairs, ${s.movesTaken}/${s.maxMoves} moves)`,margin,y);y+=8;
+
+      // Check-ins
+      if(s.preCheckin.question){
+        checkPage(14);
+        doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(140,110,130);
+        doc.text('Pre-game check-in:',margin,y);y+=4;
+        doc.setFont('helvetica','normal');
+        const preLines=doc.splitTextToSize(`"${s.preCheckin.question}" — Rating: ${'❤️'.repeat(s.preCheckin.rating)} (${s.preCheckin.rating}/10)`,maxW);
+        doc.text(preLines,margin,y);y+=preLines.length*4+2;
+      }
+      if(s.postCheckin.question){
+        checkPage(14);
+        doc.setFont('helvetica','italic');doc.setFontSize(8);doc.setTextColor(140,110,130);
+        doc.text('Post-game check-in:',margin,y);y+=4;
+        doc.setFont('helvetica','normal');
+        const postLines=doc.splitTextToSize(`"${s.postCheckin.question}" — Rating: ${'❤️'.repeat(s.postCheckin.rating)} (${s.postCheckin.rating}/10)`,maxW);
+        doc.text(postLines,margin,y);y+=postLines.length*4+2;
+      }
+
+      // Checklist items
+      if(s.checklist&&s.checklist.length>0){
+        checkPage(10);
+        doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(90,20,60);
+        doc.text(s.level==='Dating'?'Date Night Checklist:':'Prompts & Moments:',margin,y);y+=5;
+        s.checklist.forEach(item=>{
+          checkPage(12);
+          doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.setTextColor(80,60,70);
+          doc.text(`${item.emoji||'•'}  ${item.name}`,margin+2,y);y+=4;
+          if(item.discovery){
+            doc.setFont('helvetica','italic');doc.setFontSize(7.5);doc.setTextColor(140,110,130);
+            const dLines=doc.splitTextToSize(`"${item.discovery}"`,maxW-8);
+            doc.text(dLines,margin+6,y);y+=dLines.length*3.5+2;
+          }
+        });
+      }
+
+      y+=4;checkPage(4);
+      doc.setDrawColor(220,200,210);doc.line(margin,y,pw-margin,y);y+=8;
+    });
+
+    // Footer
+    checkPage(16);
+    doc.setFont('helvetica','italic');doc.setFontSize(7);doc.setTextColor(180,160,170);
+    doc.text('This document is password-protected. Keep it safe.',pw/2,y,{align:'center'});y+=4;
+    doc.text('Your data never left your device. This is yours.',pw/2,y,{align:'center'});
+
+    // Encrypt and save
+    doc.save('explicitly-naughty-journal.pdf',{encryption:{userPassword:password,ownerPassword:password+'_owner',userPermissions:['print']}});
+    privacyStatus.textContent='✓ Encrypted PDF exported — check your downloads';
+  } catch(e){
+    console.error('PDF export error:',e);
+    privacyStatus.textContent='⚠ PDF export failed — try a different browser';
+  }
+}
+
+// ═══ PWA: SERVICE WORKER & INSTALL PROMPT ═══
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js').then(reg=>{
+    console.log('SW registered:', reg.scope);
+    // Check for updates periodically
+    setInterval(()=>reg.update(),60*60*1000);
+  }).catch(err=>console.log('SW registration failed:',err));
+}
+
+let deferredInstallPrompt=null;
+const installBanner=document.querySelector ('install-banner');
+const btnInstall=document.querySelector ('btn-install');
+const btnInstallDismiss=document.querySelector ('btn-install-dismiss');
+
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  // Only show if not previously dismissed this session
+  if(!sessionStorage.getItem('en_install_dismissed')){
+    installBanner.classList.add('show');
+  }
+});
+
+if(btnInstall) btnInstall.addEventListener('click',async()=>{
+  if(!deferredInstallPrompt) return;
+  installBanner.classList.remove('show');
+  deferredInstallPrompt.prompt();
+  const result=await deferredInstallPrompt.userChoice;
+  console.log('Install result:',result.outcome);
+  deferredInstallPrompt=null;
+});
+
+if(btnInstallDismiss) btnInstallDismiss.addEventListener('click',()=>{
+  installBanner.classList.remove('show');
+  sessionStorage.setItem('en_install_dismissed','true');
+});
+
+window.addEventListener('appinstalled',()=>{
+  installBanner.classList.remove('show');
+  deferredInstallPrompt=null;
+  console.log('App installed');
+});
+</script>
+
+<!-- ═══ INSTALL BANNER ═══ -->
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-text">
+    <div class="install-banner-title">📲 Install Explicitly Naughty</div>
+    <div class="install-banner-sub">Add to home screen — play offline, no browser needed</div>
+  </div>
+  <button class="btn-install" id="btn-install">Install</button>
+  <button class="btn-install-dismiss" id="btn-install-dismiss" aria-label="Dismiss">✕</button>
+</div>
+</body>
 </html>
