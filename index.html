@@ -74,6 +74,10 @@
       <button class="setup-btn" data-count="3">3</button>
       <button class="setup-btn" data-count="4">4</button>
     </div>
+  <div id="player-names" style="display:none; width:100%; max-width:300px;">
+  <div class="setup-sub" style="margin-top:12px;">Real name or playful one, you decide?</div>
+  <div id="name-inputs"></div>
+</div>  
     <button class="btn-start" id="btn-to-level" disabled>Next →</button>
   </div>
 
@@ -430,6 +434,7 @@ const CHECKIN_POST_QUESTIONS = [
 
 let usedPreQs =[], 
     usedPostQs = [];
+let playerNames = [];
 
 function getCheckinQ(pool, used) {
   if(used.length >= pool.length) used.length = 0;
@@ -490,8 +495,8 @@ const LEVELS = [
       ["👃", "👤", "Lets bump noses"],
       ["🇫🇷", "💋", "French Kiss"],
       ["🎥", "❄️", "Netflix & Chill"],
-      ["💋", "👂", "Kiss my ears"],
-      ["💋", "🔙", "Kiss the arch of my back, slow and deliberate"],
+      ["😘", "👂", "Kiss my ears"],
+      ["👄", "🔙", "Kiss the arch of my back, slow and deliberate"],
       ["👆", "🦵", "Slowly run your finger up my legs"],
       ["🤗", "⁐", "Hold me close"],
       ["🕺", "🎵", "Dance with me"]
@@ -504,7 +509,7 @@ const LEVELS = [
     maxMoves: 28,
     turnTime: 16,
     pairs: [
-      ["💋", "🐌", "Kiss me long and Slow"],
+      ["😘", "🐌", "Kiss me long and Slow"],
       ["👅", "🍯", "Taste my honeypot"],
       ["✊", "🍆", "Hand Job"],
       ["🎭", "🛏️", "Roleplay"],
@@ -718,6 +723,12 @@ btnToLevel.addEventListener('click', () => {
   document.querySelector('#setup-players').classList.remove('visible');
   buildLevelSelect();
   document.querySelector('#setup-level').classList.add('visible');
+});
+
+playerNames = [];
+document.querySelectorAll('.name-input').forEach(inp => {
+  const val = input.val.trim();
+  playerNames.push(val || ('Player ' + (parsseInt(inp.dataset.idx) +1)));
 });
 
 // ═══ LEVEL SELECT ═══
@@ -1088,7 +1099,7 @@ function buildPlayerScores() {
     const t = document.createElement('div');
     t.className ='player-tag player-colors-' + i;
     t.id = 'player-tag' + i;
-    t.textContent = 'P' + (i + 1) + ': '  + state.scores[i];
+    t.textContent = playerNames[i] + ': '  + state.scores[i];
     playerScores.appendChild(t);
   }
 }
@@ -1100,7 +1111,7 @@ function highlightActivePlayer() {
 function updateScoreDisplay() { 
   for(let i = 0; i < state.numPlayers; i++) {
     const e = document.querySelector ('#player-tag-' + i);
-    if(e)e.textContent = 'P' + (i + 1) + ': ' + state.scores[i];
+    if (e) e.textContent = playerNames[i] + ': ' + state.scores[i];
   }}
 
 // ═══ MATCHES POPUP ═══
@@ -1189,7 +1200,7 @@ function onCardTap(e) {
     card.classList.add('wild-used');
     phraseDisplay.textContent = '🧠 Memory Mode!'; 
     phraseDisplay.style.color = 'var(--electric)';
-    memoryPlayer.textContent = 'Player' + (state.currentPlayer + 1) + '— Share a memory';
+    memoryPlayer.textContent = playerNames[state.currentPlayer] + '— Share a memory';
     const memPrompt = getMemoryPrompt();
     memoryPromptText.textContent = memPrompt;
     if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'🧠',emoji2:'', name:'Memory Mode', discovery:memPrompt});
@@ -1221,7 +1232,7 @@ function onCardTap(e) {
     card.classList.add('vuln-used');
     phraseDisplay.textContent = '❤️‍🩹 Vulnerability Card!'; 
     phraseDisplay.style.color = 'var(--rose)';
-    vulnPlayer.textContent = 'Player' + (state.currentPlayer + 1) + '— Open your heart';
+    vulnPlayer.textContent = playerNames[state.currentPlayer] + '— Open your heart';
     const vulnPrompt = getVulnPrompt();    vulnPromptText.textContent = vulnPrompt;
     if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'', name:'Vulnerability Moment', 
     discovery: vulnPrompt});
@@ -1300,7 +1311,7 @@ function checkMatch() {
       phraseDisplay.style.color = 'var(--honey)';
       modalEmoji.textContent = 'e1' + 'e2';
       modalName.textContent = m1;
-      modalPlayer.textContent = 'Player' +(state.currentPlayer + 1) +  '— Your turn! 😏';
+      modalPlayer.textContent = playerNames[state.currentPlayer] +  '— Your turn! 😏';
       discoveryText.textContent = getDiscoveryPrompt();
       actModal.classList.add('visible');
       state.firstCard = null;state.secondCard = null;
@@ -1502,6 +1513,8 @@ function fullRestart() {
   usedVulnPrompts = [];
   usedPreQs = [];
   usedPostQs = [];
+  playerNames = [];
+  document.querySelector('#player-names').style.display = 'none'
   gameArea.style.display ='none';
   gameFooter.style.display ='none';
   endscreen.classList.remove('visible');
@@ -1754,7 +1767,7 @@ function generateEncryptedPDF(sessions, password) {
         doc.setFont('helvetica','bold');
         doc.setFontSize(9);
         doc.setTextColor(90, 20, 60);
-        doc.text(s.level === 'Dating' ? 'Date Night Checklist:' : 'Prompts & Moments:', margin, y); y += 5;
+        doc.text(s.level === 'Dating' ? 'Date Night Jar:' : 'Prompts & Moments:', margin, y); y += 5;
         s.checklist.forEach(item => {
           checkPage(12);
           doc.setFont('helvetica','normal');
