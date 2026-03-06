@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="logo-header.png">
 <title>Explicitly Naughty</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -193,8 +193,8 @@
   <div id="endscreen" class="endscreen">
     <div class="end-title" id="end-title"></div>
     <div class="date-checklist" id="date-checklist" style="display:none;">
-      <div class="date-checklist-title">📋 Your Date Night Checklist</div>
-      <div class="date-checklist-sub">Fulfill these on your date — check them off as you go!</div>
+      <div class="date-checklist-title">🫙 Your Date Jar</div>
+      <div class="date-checklist-sub">A spark worth exploring, lets see where it leads to!</div>
       <div class="date-checklist-items" id="date-checklist-items"></div>
     </div>
     <div class="end-scores" id="end-scores"></div>
@@ -439,9 +439,9 @@ function getCheckinQ(pool, used) {
   return pick;
 }
 
-function buildCheckinScale(containerId, btnId){
-  const container = document.querySelector ('#containerId');
-  const btn = document.querySelector ('#btnId');
+function buildCheckinScale(containerId, btnId) {
+  const container = document.querySelector ('#' + containerId);
+  const btn = document.querySelector ('#' + btnId);
   container.innerHTML = '';
   const hearts = ['🤍', '🤍', '🤍', '🩵', '💙', '💛', '💛', '🧡', '❤️', '❤️‍🔥'];
   hearts.forEach((h, i) => {
@@ -978,13 +978,13 @@ const gameArea = document.querySelector('#game-area'),
       matchesPopup = document.querySelector('#matches-popup'),
       matchesBody = document.querySelector('#matches-popup-body'),
       matchesClose = document.querySelector('#matches-popup-close'),
-      safewordFab = document.querySelector('#safe-word-fab'),
+      safeWordFab = document.querySelector('#safe-word-fab'),
       gameFooter = document.querySelector('#game-footer');
 
 const memoryModal = document.querySelector('#memory-modal'),
       memoryPromptText = document.querySelector('#memory-prompt-text'),
       memoryPlayer = document.querySelector('#memory-player'),
-      btmMemoryDone = document.querySelector('#btn-memory-done'),
+      btnMemoryDone = document.querySelector('#btn-memory-done'),
       btnMemorySkip = document.querySelector('#btn-memory-skip');
 
 const vulnModal = document.querySelector('#vuln-modal'),
@@ -1031,8 +1031,7 @@ function startLevel(li) {
 
   shuffle(state.deck);
   endScreen.classList.remove('visible');
-  gameArea.style.display = flex;
-  gameFooter.style.display = 'block';
+  gameArea.style.display = 'flex';  gameFooter.style.display = 'block';
   matchesFab.classList.add('show');
   safeWordFab.classList.add('show');
   levelBadge.textContent = `${lv.icon} ${lv.name}`;
@@ -1109,9 +1108,9 @@ function buildMatchesPopup(pairs) {
   matchesBody.innerHTML = '';
   pairs.forEach((d, i) => {
     const el = document.createElement('div');
-    el.className='match-ref-item';
+    el.className = 'match-ref-item';
     el.id = 'mri-' + i;
-    el.innerHTML = '<span class="match-ref-emojis">'[0] + d[1] + '</span><span class="mri-name">' + d[2] + '</span>';
+    el.innerHTML = '<span class="match-ref-emojis">' + d[0] + d[1] + '</span><span class="mri-name">' + d[2] + '</span>';
     matchesBody.appendChild(el);
   });
 }
@@ -1223,8 +1222,7 @@ function onCardTap(e) {
     phraseDisplay.textContent = '❤️‍🩹 Vulnerability Card!'; 
     phraseDisplay.style.color = 'var(--rose)';
     vulnPlayer.textContent = 'Player' + (state.currentPlayer + 1) + '— Open your heart';
-    const vulnPrompt = etVulnPrompt();
-    vulnPromptText.textContent = vulnPrompt;
+    const vulnPrompt = getVulnPrompt();    vulnPromptText.textContent = vulnPrompt;
     if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'', name:'Vulnerability Moment', 
     discovery: vulnPrompt});
     vulnModal.classList.add('visible');
@@ -1285,7 +1283,7 @@ function checkMatch() {
          emoji2: e2, 
          name:m1,
          discovery:getDiscoveryPrompt()});
-      phraseDisplay.textContent = '✨' + m1 + 'added to your date!';
+      phraseDisplay.textContent = '✨' + m1 + 'added to your jar!';
       phraseDisplay.style.color = 'var(--honey)';
       state.firstCard = null;
       state.secondCard = null;
@@ -1409,7 +1407,7 @@ function showLevelEnd() {
   // Store results for after check-in
   const lv = LEVELS[state.currentLevel];
   state._endTitle = state.matchedPairs >= lv.pairs.length
-    ? (state.currentLevel === 0 ? `💕 Date Night Ready!`:`🔥 ${lv.name} Complete!`) : '⏰ Out of Moves!';
+    ? (state.currentLevel === 0 ? `💕 Your Date Jar is Ready!`:`🔥 ${lv.name} Complete!`) : '⏰ Out of Moves!';
   let html = '';
   const mx = Math.max(...state.scores);
   for(let i = 0; i < state.numPlayers; i++) {
