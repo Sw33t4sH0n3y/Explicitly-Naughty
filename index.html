@@ -261,6 +261,16 @@
   <div class="matches-popup-body" id="matches-popup-body"></div>
 </div>
 
+<!-- ═══ INSTALL BANNER (must be before script) ═══ -->
+<div class="install-banner" id="install-banner">
+  <div class="install-banner-text">
+    <div class="install-banner-title">📲 Install Explicitly Naughty</div>
+    <div class="install-banner-sub">Add to home screen — play offline, no browser needed</div>
+  </div>
+  <button class="btn-install" id="btn-install">Install</button>
+  <button class="btn-install-dismiss" id="btn-install-dismiss" aria-label="Dismiss">✕</button>
+</div>
+
 <script>
 // ═══ DISCOVERY PROMPTS ═══
 const DISCOVERY_PROMPTS = [
@@ -420,27 +430,29 @@ const CHECKIN_POST_QUESTIONS = [
 
 let usedPreQs =[], 
     usedPostQs = [];
+
 function getCheckinQ(pool, used) {
   if(used.length >= pool.length) used.length = 0;
   const avail = pool.filter(q => !used.includes(q));
-  const pick = avail[Math.floor(Math.random()*avail.length)];
+  const pick = avail[Math.floor(Math.random() * avail.length)];
   used.push(pick); 
   return pick;
 }
 
 function buildCheckinScale(containerId, btnId){
-  const container=document.querySelector (containerId);
-  const btn=document.querySelector (btnId);
-  container.innerHTML='';
+  const container = document.querySelector ('#containerId');
+  const btn = document.querySelector ('#btnId');
+  container.innerHTML = '';
   const hearts = ['🤍', '🤍', '🤍', '🩵', '💙', '💛', '💛', '🧡', '❤️', '❤️‍🔥'];
   hearts.forEach((h, i) => {
     const b = document.createElement('button'); 
-      b.className= "checkin-btn";
-      b.textContent=h;b.dataset.val= i+1;
-      b. addEventListener('click',() => {
+      b.className = "checkin-btn";
+      b.textContent = h;
+      b.dataset.val = i + 1;
+      b. addEventListener('click', () => {
       container.querySelectorAll('.checkin-btn').forEach(x => x.classList.remove('selected'));
       b.classList.add('selected'); 
-      btn.disabled=false;
+      btn.disabled = false;
     });
     container.appendChild(b);
   });
@@ -459,7 +471,7 @@ const LEVELS = [
       ["🚘", "🧭", "Go on an adventure?"],
       ["🎼", "🎸", "Music concert?"],
       ["🫖", "📚", "Tea & Bookstore?"],
-      ["🍔", "🎮", "Burgers & Gaming"]
+      ["🍔", "🎮", "Burgers & Gaming"],
       ["🍽️", "🎬", "Dinner & Movie?"],
       ["☕️", "🥯", "Coffee & Bagel?"],
       ["🌶️", "🍹", "Grab a Drink?"],
@@ -481,8 +493,9 @@ const LEVELS = [
       ["💋", "👂", "Kiss my ears"],
       ["💋", "🔙", "Kiss the arch of my back, slow and deliberate"],
       ["👆", "🦵", "Slowly run your finger up my legs"],
-      ["🤗", "⁐", "Hold me close"]
-      ["🕺", "🎵", "Dance with me"]]},
+      ["🤗", "⁐", "Hold me close"],
+      ["🕺", "🎵", "Dance with me"]
+    ]},
 
  { name: 'Committed',
     cssClass:'committed', 
@@ -574,11 +587,28 @@ const dobMonth = document.querySelector('#dob-month'),
 // Populate selects
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-      months.forEach ((m, i) => {const o= document.createElement('option');o.value= i + 1; o.textContent= m; dobMonth.appendChild(o);});
-      for(let d = 1; d <= 31; d++) {const o= document.createElement('option');o.value = d; o.textContent= d; dobDay.appendChild(o);} 
+months.forEach ((m, i) => {
+  const o = document.createElement('option');
+  o.value = i + 1; 
+  o.textContent = m; 
+  dobMonth.appendChild(o);
+});
+
+for(let d = 1; d <= 31; d++) {
+  const o = document.createElement('option');
+  o.value = d; 
+  o.textContent= d; 
+  dobDay.appendChild(o);
+} 
 
 const curYear = new Date().getFullYear();
-for(let y=curYear; y >= curYear - 100; y--) {const o= document.createElement('option');o.value = y; o.textContent = y; dobYear.appendChild(o);}
+  for(let y = curYear; 
+    y >= curYear - 100; 
+    y--) {const o= document.createElement('option');
+    o.value = y; 
+    o.textContent = y; 
+    dobYear.appendChild(o);
+}
 
 function startAgeTimer() {
   ageTimer = AGE_TIME_LIMIT;
@@ -588,7 +618,7 @@ function startAgeTimer() {
     if (ageTimer <= 0) {
       clearInterval(ageInterval);
       ageExpired = true;
-      ageError.textContent = "⏰ Time's up! If you know your birthday, that shoud not take that long.";
+      ageError.textContent = "⏰ Time's up! you gotta be faster than that.";
       btnVerify.diabled = true;
       dobMonth.disabled = true;
       dobDay.disabled = true;
@@ -614,8 +644,14 @@ function checkDobComplete() {
 
 // Start timer when first select is touched
 let ageTimerStarted = false;
-[dobMonth, dobDay, dobYear].forEach(s => s.addEventListener('focus', () => { if(!ageTimerStarted){ageTimerStarted = true; startAgeTimer();}
-}, {once:false}));
+[dobMonth, dobDay, dobYear].forEach(s => s.addEventListener('focus', () => { 
+  if(!ageTimerStarted) { 
+    ageTimerStarted = true; 
+    startAgeTimer();
+  }
+}, 
+   {once:false}
+));
 
 btnVerify.addEventListener('click', () => {
   const m = parseInt(dobMonth.value),
@@ -624,7 +660,7 @@ btnVerify.addEventListener('click', () => {
   if (!m || !d || !y) return;
   const dob = new Date(y, m-1, d);
   const today = new Date();
-  let age = today.getFullYear() -dob.getFullYear();
+  let age = today.getFullYear() - dob.getFullYear();
   const monthDiff = today.getMonth() -dob.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
   
@@ -653,13 +689,14 @@ document.querySelector('#btn-age-no').addEventListener('click',() => {
 // ═══ GROUND RULES ═══
 const consentCb = document.querySelector('#consent-checkbox'),
       btnRulesNext = document.querySelector('#btn-rules-next');
-      consentCb.addEventListener('change', () => {
-        btnRulesNext.disabled = !consentCb.checked;});
-        btnRulesNext.addEventListener('click', () => {
-          if (!consentCb.checked) return;
-          document.querySelector('#setup-rules').classList.remove('visible');
-          document.querySelector('#setup-players').classList.add('visible');
-        });
+consentCb.addEventListener('change', () => {
+btnRulesNext.disabled = !consentCb.checked;
+});
+btnRulesNext.addEventListener('click', () => {
+  if (!consentCb.checked) return;
+  document.querySelector('#setup-rules').classList.remove('visible');
+  document.querySelector('#setup-players').classList.add('visible');
+});
 
 // Player Count
 let selectedCount = 0,
@@ -667,21 +704,21 @@ let selectedCount = 0,
     popupOpen = false;
 
 const btnToLevel = document.querySelector('#btn-to-level');
-      document.querySelectorAll('#player-count-options .setup-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.querySelectorAll('#player-count-options .setup-btn').forEach(b => b.classList.remove('selected'));
-          btn.classList.add('selected');
-          selectedCount = parseInt(btn.dataset.count);
-          btnToLevel.disabled = false;
-        });
-      });
+document.querySelectorAll('#player-count-options .setup-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#player-count-options .setup-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedCount = parseInt(btn.dataset.count);
+    btnToLevel.disabled = false;
+  });
+});
 
-      btnToLevel.addEventListener('click', () => {
-        if(!selectedCount) return;
-        document.querySelector('#setup_players').classList.remove('visible');
-        buildLevelSelect();
-        document.querySelector('#setup-level').classList.add('visible');
-      });
+btnToLevel.addEventListener('click', () => {
+  if(!selectedCount) return;
+  document.querySelector('#setup-players').classList.remove('visible');
+  buildLevelSelect();
+  document.querySelector('#setup-level').classList.add('visible');
+});
 
 // ═══ LEVEL SELECT ═══
 const UNLOCK_KEY = 'en_unlocked';
@@ -710,11 +747,10 @@ function getUnlockedLevels() {
   try {
     const stored = localStorage.getItem(UNLOCK_KEY);
     if(!stored) return new Set([FREE_LEVEL]);
-    const parsed = JSON.parse(stored);
-    const s = new Set(parsed);
+    const s = new Set(JSON.parse(stored));
     s.add(FREE_LEVEL); // Dating always free
     return s;
-  } catch(e){ 
+  } catch(e) { 
     return new Set([FREE_LEVEL]);
    }
 }
@@ -732,11 +768,7 @@ function unlockLevel(idx) {
 }
 
 function unlockAll() {
-  const u = new Set(LEVELS.map((_, i) => i)); 
-  saveUnlockedLevels(u);
-}
-function isLevelUnlocked(idx) { 
-  return getUnlockedLevels().has(idx); 
+   saveUnlockedLevels(new Set(LEVELS.map((_, i) => i))); 
 }
 
 // Purchase modal refs
@@ -750,14 +782,14 @@ const btnCodeApply = document.querySelector ('#btn-code-apply');
 const unlockStatus = document.querySelector ('#unlock-status');
 const btnPurchaseClose = document.querySelector ('#btn-purchase-close');
 
-let purchaseTargetLevel = null;
+// let purchaseTargetLevel = null;
 
 function showPurchaseModal(levelIdx) {
   purchaseTargetLevel = levelIdx;
   const lv = LEVELS[levelIdx];
   purchaseIcon.textContent = lv.icon;
-  purchaseTitle.textContent = `Unlock ${lv.name}`;
-  purchaseSub.textContent = `${lv.desc}. Unlock this level to play — or grab them all at a discount.`;
+  purchaseTitle.textContent = 'Unlock ' + lv.name;
+  purchaseSub.textContent = lv.desc + '. Unlock this level to play — or grab them all at a discount.';
   unlockCodeInput.value = '';
   unlockStatus.textContent = '';
   unlockStatus.className = 'unlock-status';
@@ -768,17 +800,16 @@ function showPurchaseModal(levelIdx) {
   // Single level option
   const singleOpt = document.createElement('div');
   singleOpt.className = 'purchase-option';
-  singleOpt.innerHTML = `<div class="po-icon">${lv.icon}</div><div class="po-info"><div class="po-name">${lv.name}</div><div class="po-desc">Unlock this level only</div></div><div class="po-price">${LEVEL_PRICES[levelIdx]}</div>`;
+  singleOpt.innerHTML = '<div class="po-icon">' + lv.icon + '</div><div class="po-info"><div class="po-name">' + lv.name + '</div><div class="po-desc">Unlock this level only</div></div><div class="po-price">' + LEVEL_PRICES[levelIdx] + '</div>';
   singleOpt.addEventListener('click',() => handlePurchase('single',levelIdx));
   purchaseOptions.appendChild(singleOpt);
 
   // Bundle option — only show if not all unlocked
   const unlocked = getUnlockedLevels();
-  const lockedCount = LEVELS.length-unlocked.size;
-  if(lockedCount>1) {
+  if(LEVELS.length - unlocked.size > 1) {
     const bundleOpt = document.createElement('div');
     bundleOpt.className = 'purchase-option highlight';
-    bundleOpt.innerHTML = `<div class="po-icon">✨</div><div class="po-info"><div class="po-name">Unlock All Levels</div><div class="po-desc">Honeymoon + Committed + Married + Child at Heart</div></div><div class="po-price">${BUNDLE_PRICE}</div>`;
+    bundleOpt.innerHTML = '<div class="po-icon">✨</div><div class="po-info"><div class="po-name">Unlock All Levels</div><div class="po-desc">Honeymoon + Committed + Married + Child at Heart</div></div><div class="po-price">' + BUNDLE_PRICE + '</div>';
     bundleOpt.addEventListener('click',() => handlePurchase('bundle'));
     purchaseOptions.appendChild(bundleOpt);
   }
@@ -786,7 +817,7 @@ function showPurchaseModal(levelIdx) {
   purchaseModal.classList.add('visible');
 }
 
-function handlePurchase(type,levelIdx) {
+function handlePurchase(type, levelIdx) {
   // ┌──────────────────────────────────────────────────┐
   // │  INTEGRATION POINT                               │
   // │  Replace this function body with your payment     │
@@ -811,11 +842,12 @@ function onPurchaseComplete() {
 }
 
 // Unlock code handler
-btnCodeApply.addEventListener('click',() => {
+btnCodeApply.addEventListener('click', () => {
   const code = unlockCodeInput.value.trim().toUpperCase().replace(/[\s-]/g, '');
-  if(!code){ 
+  if(!code) { 
     unlockStatus.textContent = 'Enter a code above'; 
-    unlockStatus.className = 'unlock-status error'; return;
+    unlockStatus.className = 'unlock-status error'; 
+    return;
    }
   
   if(UNLOCK_CODES[code]) {
@@ -825,8 +857,7 @@ btnCodeApply.addEventListener('click',() => {
       unlockStatus.textContent = '✨ All levels unlocked! Enjoy the full experience.';
     } else {
       target.forEach(i => unlockLevel(i));
-      const names = target.map(i => LEVELS[i].name).join(', ');
-      unlockStatus.textContent = `✨ ${names} unlocked!`;
+      unlockStatus.textContent = '✨ ' + target.map(i => LEVELS[i].name).join(', ') + 'unlocked!';
     }
     unlockStatus.className = 'unlock-status success';
     setTimeout(() => { 
@@ -840,26 +871,28 @@ btnCodeApply.addEventListener('click',() => {
   }
 });
 
-btnPurchaseClose.addEventListener('click',() => {
+btnPurchaseClose.addEventListener('click', () => {
   purchaseModal.classList.remove('visible');
 });
 
-const levelGrid = document.querySelector ('level-select-grid'),
+const levelGrid = document.querySelector ('#level-select-grid'),
 btnStartGame = document.querySelector ('#btn-start-game');
+
 function buildLevelSelect() {
   levelGrid.innerHTML = '';
   const unlocked = getUnlockedLevels();
   LEVELS.forEach((lv, idx) => {
     const card = document.createElement('div');
     const isLocked = !unlocked.has(idx);
-    card.className = 'level-card'+(isLocked?' locked':'');
+    card.className = 'level-card' + (isLocked ? ' locked' : '');
     card.setAttribute('data-level', idx);
-    card.setAttribute('tabindex', '0');card.setAttribute('role', 'button');
-    card.setAttribute('aria-label',`${lv.name}: ${lv.desc}${isLocked?' (Locked)':''}`);
+    card.setAttribute('tabindex', '0');
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', lv.name + ': ' + lv.desc + (isLocked ? ' (Locked)':''));
     let badge = '';
     if(idx === FREE_LEVEL) badge = '<div class="lc-free-tag">FREE</div>';
     else if(isLocked) badge = '<div class="lc-lock">🔒</div>';
-    card.innerHTML =`${badge}<div class="lc-icon">${lv.icon}</div><div class="lc-name">${lv.name}</div><div class="lc-desc">${lv.desc}</div>`;
+    card.innerHTML = badge + '<div class="lc-icon">' + lv.icon + '</div><div class="lc-name">' + lv.name + '</div><div class="lc-desc">' + lv.desc + '</div>';
     card.addEventListener('click',() => {
       if(isLocked) { 
         showPurchaseModal(idx);
@@ -874,8 +907,7 @@ function buildLevelSelect() {
         e.preventDefault();
         if(isLocked){ 
           showPurchaseModal(idx); 
-        }
-        else { 
+        } else { 
           selectLevel(idx); 
         }
       }
@@ -886,8 +918,9 @@ function buildLevelSelect() {
 
 function selectLevel(idx) {
   document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector(`.level-card[data-level="${idx}"]`).classList.add('selected');
-  selectedLevel=idx;btnStartGame.disabled = false;
+  document.querySelector('.level-card[data-level="' + idx +'"]').classList.add('selected');
+  selectedLevel = idx;
+  btnStartGame.disabled = false;
 }
 const checkinPre = document.querySelector('#checkin-pre'),
       checkinPost = document.querySelector('#checkin-post'),
@@ -895,6 +928,7 @@ const checkinPre = document.querySelector('#checkin-pre'),
       checkinPostQ = document.querySelector('#checkin-post-q'),
       btnCheckinPreNext = document.querySelector('#btn-checkin-pre-next'),
       btnCheckinPostNext = document.querySelector('#btn-checkin-post-next');
+
   btnStartGame.addEventListener('click', () => {
   if(selectedLevel < 0) return;
   state.numPlayers = selectedCount;
@@ -902,8 +936,7 @@ const checkinPre = document.querySelector('#checkin-pre'),
   document.querySelector('#setup-level').classList.remove('visible');
 
   // Show pre-game check-in
-// Show Pre-game check in
-  checkinPreQ.textContent = getCheckingQ(CHECKIN_PRE_QUESTIONS, usedPreQs);
+  checkinPreQ.textContent = getCheckinQ(CHECKIN_PRE_QUESTIONS, usedPreQs);
   buildCheckinScale('checkin-pre-scale', 'btn-checkin-pre-next');
   btnCheckinPreNext.disabled = true;
   checkinPre.classList.add('visible');
@@ -912,7 +945,7 @@ const checkinPre = document.querySelector('#checkin-pre'),
 btnCheckinPreNext.addEventListener('click', () => {
   const sel = document.querySelector('#checkin-pre-scale  .checkin-btn.selected');
   state._preQ = checkinPreQ.textContent;
-  state._preRating = sel?parseInt(sel.dataset.val): 0;
+  state._preRating = sel ? parseInt(sel.dataset.val): 0;
   checkinPre.classList.remove('visible');
   startLevel(selectedLevel);
 });
@@ -938,7 +971,7 @@ const gameArea = document.querySelector('#game-area'),
       pauseModal = document.querySelector('#pause-modal'),
       btnResume = document.querySelector('#btn-resume'),
       btnEndEarly = document.querySelector('#btn-end-early'),
-      endScreen = document.querySelector('#end-screen'),
+      endScreen = document.querySelector('#endscreen'),
       endTitle = document.querySelector('#end-title'),
       endScores = document.querySelector('#end-scores'),
       matchesFab = document.querySelector('#matches-fab'),
@@ -963,8 +996,20 @@ const vulnModal = document.querySelector('#vuln-modal'),
 
 function startLevel(li) {
   const lv = LEVELS[li];
-  Object.assign(state, {currentLevel:li, currentPlayer: 0, firstCard: null, secondCard: null, checking: false,
-    matchedPairs: 0, movesTaken: 0, timerStarted: false, gameOver: false, paused: false, foundPairs: new Set(), dateChecklist:[]});
+  Object.assign(state, 
+  {currentLevel:li, 
+    currentPlayer: 0, 
+    firstCard: null, 
+    secondCard: null, 
+    checking: false,
+    matchedPairs: 0, 
+    movesTaken: 0, 
+    timerStarted: false, 
+    gameOver: false, 
+    paused: false, 
+    foundPairs: new Set(), 
+    dateChecklist:[]
+  });
 
   clearInterval(state.timerInterval);
       usedPrompts = [];
@@ -980,7 +1025,7 @@ function startLevel(li) {
   for(let w = 0; w < WILD_CARDS_PER_LEVEL; w++) {
       state.deck.push({emoji: '🧠', pairName: '__WILD__', isWild: true, isVuln: false});     
 }
-  for(let w = 0; v < VULN_CARDS_PER_LEVEL; v++) {
+  for(let v = 0; v < VULN_CARDS_PER_LEVEL; v++) {
       state.deck.push({emoji: '❤️‍🩹', pairName: '__VULN__', isWild: false, isVuln: true});     
 }
 
@@ -996,9 +1041,9 @@ function startLevel(li) {
   totalPairs.textContent = lv.pairs.length;
   moves.textContent = '0';
   matchedCount.textContent = '0';
-  timer.textContent = lv.turnTime;
+  displayTimer.textContent = lv.turnTime;
   timer.classList.remove('warning');
-  phrase.textContent = '';
+  phraseDisplay.textContent = '';
   gameBoard.className = state.deck.length <= 16 ? 'board cols-4':'board cols-5';
   buildBoard();
   buildPlayerScores();
@@ -1013,13 +1058,13 @@ function shuffle(a) {
   }}
 
 function buildBoard() {
-  boardEl.innerHTML = '';
+  board.innerHTML = '';
   state.deck.forEach((item, idx) => {
     const c = document.createElement('div');
     let cls = 'card';
     if(item.isWild) cls +=' wild-card';
     if(item.isVuln) cls +=' vuln-card';
-    c.className =cls; 
+    c.className = cls; 
     c.dataset.index = idx; 
     c.dataset.pairName = item.pairName;
     if(item.isWild) c.dataset.wild = 'true';
@@ -1027,36 +1072,36 @@ function buildBoard() {
     c.setAttribute('tabindex', '0');
     c.setAttribute('role', 'button');
     c.setAttribute('aria-label', 'Hidden card');
-    c.innerHTML=`<span class="emoji">${item.emoji}</span>`;
-    c.addEventListener('click',onCardTap);
+    c.innerHTML='<span class="emoji">' + item.emoji + '</span>';
+    c.addEventListener('click', onCardTap);
     c.addEventListener('keydown',e => {
       if(e.key === 'Enter' || e.key ===  '') {
         e.preventDefault();
         onCardTap(e);
       }});
-    boardEl.appendChild(c);
+    board.appendChild(c);
   });
 }
 
 function buildPlayerScores() {
-  playerScoresEl.innerHTML = '';
+  playerScores.innerHTML = '';
   for(let i = 0; i < state.numPlayers; i++) {
     const t = document.createElement('div');
-    t.className=`player-tag player-colors-${i}`;
-    t.id = `player-tag-${i}`;
-    t.textContent = `P${i+1}: ${state.scores[i]}`;
+    t.className ='player-tag player-colors-' + i;
+    t.id = 'player-tag' + i;
+    t.textContent = 'P' + (i + 1) + ': '  + state.scores[i];
     playerScores.appendChild(t);
   }
 }
 function highlightActivePlayer() {
   for(let i = 0; i < state.numPlayers; i++) {
-    const e = document.querySelector (`player-tag-${i}`);
+    const e = document.querySelector ('player-tag' + i);
     if(e)e.classList.toggle('active', i === state.currentPlayer);
   }}
 function updateScoreDisplay() { 
   for(let i = 0; i < state.numPlayers; i++) {
-    const e = document.querySelector (`player-tag-${i}`);
-    if(e)e.textContent =`P${i+1}: ${state.scores[i]}`;
+    const e = document.querySelector ('#player-tag-' + i);
+    if(e)e.textContent = 'P' + (i + 1) + ': ' + state.scores[i];
   }}
 
 // ═══ MATCHES POPUP ═══
@@ -1065,8 +1110,8 @@ function buildMatchesPopup(pairs) {
   pairs.forEach((d, i) => {
     const el = document.createElement('div');
     el.className='match-ref-item';
-    el.id = `mri-${i}`;
-    el.innerHTML =`<span class="match-ref-emojis">${d[0]}${d[1]}</span><span class="mri-name">${d[2]}</span>`;
+    el.id = 'mri-' + i;
+    el.innerHTML = '<span class="match-ref-emojis">'[0] + d[1] + '</span><span class="mri-name">' + d[2] + '</span>';
     matchesBody.appendChild(el);
   });
 }
@@ -1090,7 +1135,7 @@ matchesFab.addEventListener('click',() => {
 });
 
 matchesClose.addEventListener('click',() => {
-  popupOpen=false;
+  popupOpen = false;
   matchesPopup.classList.remove('visible');
 });
 document.addEventListener('click', e => {
@@ -1100,7 +1145,6 @@ document.addEventListener('click', e => {
   }});
 
 // ═══ PAUSE ═══
-const safeWordFab = document.querySelector('#safe-word-fab');
   safeWordFab.addEventListener('click',() => { 
   if(state.gameOver) return;
   state.paused = true;
@@ -1144,16 +1188,16 @@ function onCardTap(e) {
     state.checking = true;
     clearInterval(state.timerInterval);
     card.classList.add('wild-used');
-    phrase.textContent = '🧠 Memory Mode!'; 
-    phrase.style.color = 'var(--electric)';
-    memoryPlayerEl.textContent = `Player ${state.currentPlayer+1} — Share a memory`;
+    phraseDisplay.textContent = '🧠 Memory Mode!'; 
+    phraseDisplay.style.color = 'var(--electric)';
+    memoryPlayer.textContent = 'Player' + (state.currentPlayer + 1) + '— Share a memory';
     const memPrompt = getMemoryPrompt();
     memoryPromptText.textContent = memPrompt;
     if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'🧠',emoji2:'', name:'Memory Mode', discovery:memPrompt});
     memoryModal.classList.add('visible');
     const closeMemory = () => {
       memoryModal.classList.remove('visible'); 
-      phrase.textContent =' ';
+      phraseDisplay.textContent =' ';
       state.checking = false;
       if(state.timerStarted && state.timeLeft > 0) {
         state.timerInterval = setInterval(() => {
@@ -1176,16 +1220,17 @@ function onCardTap(e) {
     state.checking = true; 
     clearInterval(state.timerInterval);
     card.classList.add('vuln-used');
-    phrase.textContent = '❤️‍🩹 Vulnerability Card!'; 
-    phrase.style.color = 'var(--rose)';
-    vulnPlayer.textContent =`Player ${state.currentPlayer+1} — Open your heart`;
+    phraseDisplay.textContent = '❤️‍🩹 Vulnerability Card!'; 
+    phraseDisplay.style.color = 'var(--rose)';
+    vulnPlayer.textContent = 'Player' + (state.currentPlayer + 1) + '— Open your heart';
     const vulnPrompt = etVulnPrompt();
     vulnPromptText.textContent = vulnPrompt;
-    if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'', name:'Vulnerability Moment', discovery:vulnPrompt});
+    if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'', name:'Vulnerability Moment', 
+    discovery: vulnPrompt});
     vulnModal.classList.add('visible');
     const closeVuln = () => {
       vulnModal.classList.remove('visible'); 
-      phrase.textContent = '';
+      phraseDisplay.textContent = '';
       state.checking = false;
       if(state.timerStarted && state.timeLeft > 0) {
         state.timerInterval = setInterval(() => {
@@ -1220,7 +1265,7 @@ function getMate(emoji) {
 function checkMatch() {
   state.checking = true;
   clearInterval(state.timerInterval);
-  const e1 = state.firstCard.querySelector('#.emoji').textContent, e2 = state.secondCard.querySelector('#.emoji').textContent;
+  const e1 = state.firstCard.querySelector('.emoji').textContent, e2 = state.secondCard.querySelector('.emoji').textContent;
   const m1 = getMate(e1), m2 = getMate(e2);
   const isMatch = (m1 === m2 && m1 !== null && state.firstCard !== state.secondCard);
   if(isMatch) {
@@ -1236,41 +1281,44 @@ function checkMatch() {
 
     // ── DATING LEVEL: no act-it-out, build date checklist ──
     if(state.currentLevel === 0) {
-      state.dateChecklist.push({emoji1:e1, emoji2:e2, name:m1,discovery:getDiscoveryPrompt()});
-      phrase.textContent = `✨ ${m1} added to your date!`;
-      phraseEl.style.color = 'var(--honey)';
+      state.dateChecklist.push({emoji1:e1,
+         emoji2: e2, 
+         name:m1,
+         discovery:getDiscoveryPrompt()});
+      phraseDisplay.textContent = '✨' + m1 + 'added to your date!';
+      phraseDisplay.style.color = 'var(--honey)';
       state.firstCard = null;
       state.secondCard = null;
       state.timerStarted = false;
       state.checking = false;
       setTimeout(() => { 
-        phraseEl.textContent = '';
-        if(checkLevelEnd())return; 
+        phraseDisplay.textContent = '';
+        if(checkLevelEnd()) return; 
       }, 1200);
     } else {
 
       // ── ALL OTHER LEVELS: show act-it-out modal ──
-      phraseEl.textContent = `🔥 ${m1}!`;
-      phraseEl.style.color = 'var(--honey)';
-      modalEmoji.textContent = `${e1} ${e2}`;
+      phraseDisplay.textContent = '🔥' + m1 + '!';
+      phraseDisplay.style.color = 'var(--honey)';
+      modalEmoji.textContent = 'e1' + 'e2';
       modalName.textContent = m1;
-      modalPlayer.textContent = `Player ${state.currentPlayer+1} — Your turn! 😏`;
+      modalPlayer.textContent = 'Player' +(state.currentPlayer + 1) +  '— Your turn! 😏';
       discoveryText.textContent = getDiscoveryPrompt();
       actModal.classList.add('visible');
       state.firstCard = null;state.secondCard = null;
       state.timerStarted = false;
       const close = () => {
         actModal.classList.remove('visible');
-        phraseEl.textContent = '';
+        phraseDisplay.textContent = '';
         state.checking = false;
         if(checkLevelEnd()) return;
       };
       btnActDone.onclick = close;
       btnActSkip.onclick = close;
     }
-  }else{
-    phrase.textContent = 'Not a match 🙈';
-    phrase.style.color = 'var(--coral)';
+  } else {
+    phraseDisplay.textContent = 'Not a match 🙈';
+    phraseDisplay.style.color = 'var(--coral)';
     setTimeout(() => {
       if(state.firstCard) {
         state.firstCard.classList.remove('flipped');
@@ -1287,7 +1335,7 @@ function checkMatch() {
       state.timerStarted = false;
       state.movesTaken ++;
       moves.textContent = state.movesTaken;
-      phrase.textContent = '';
+      phraseDisplay.textContent = '';
       if(checkLevelEnd()) return;
       nextPlayer();
     }, 1200);
@@ -1310,8 +1358,8 @@ function startTimer() {
     }}, 1000);
 }
 function onTimeUp() {
-  phrase.textContent = 'Too slow! ⏰';
-  phrase.style.color = 'var(--ember)';
+  phraseDisplay.textContent = 'Too slow! ⏰';
+  phraseDisplay.style.color = 'var(--ember)';
   if(state.firstCard) {
     state.firstCard.classList.remove('flipped');
     state.firstCard.setAttribute('aria-label', 'Hidden card');
@@ -1327,8 +1375,8 @@ function onTimeUp() {
   state.checking = false;
   state.timerStarted = false;
   state.movesTaken ++;
-  movesEl.textContent = state.movesTaken;
-  setTimeout(() => {phraseEl.textContent = '';
+  moves.textContent = state.movesTaken;
+  setTimeout(() => {phraseDisplay.textContent = '';
   if(checkLevelEnd()) return;
   nextPlayer();
 }, 800);
@@ -1364,7 +1412,7 @@ function showLevelEnd() {
     ? (state.currentLevel === 0 ? `💕 Date Night Ready!`:`🔥 ${lv.name} Complete!`) : '⏰ Out of Moves!';
   let html = '';
   const mx = Math.max(...state.scores);
-  for(let i = 0; i< state.numPlayers; i++) {
+  for(let i = 0; i < state.numPlayers; i++) {
     const w = state.scores[i] === mx;
     html += `<div class="${w?'winner':''}">Player ${i+1}: ${state.scores[i]} points${w?' 👑':''}</div>`;
   }
@@ -1386,7 +1434,7 @@ btnCheckinPostNext.addEventListener('click', () => {
   endScores.innerHTML = state._endScores;
 
   // Date checklist for Dating level
-  const checklistEl = document.querySelector ('#date-checklist');
+  const checklist = document.querySelector ('#date-checklist');
   const checklistItems = document.querySelector ('#date-checklist-items');
   if(state.currentLevel === 0 && state.dateChecklist.length > 0) {
     checklistItems.innerHTML = '';
@@ -1402,9 +1450,9 @@ btnCheckinPostNext.addEventListener('click', () => {
       });
       checklistItems.appendChild(row);
     });
-    checklistEl.style.display = 'block';
+    checklist.style.display = 'block';
   } else {
-    checklistEl.style.display = 'none';
+    checklist.style.display = 'none';
   }
 
   // Save session if opted in
@@ -1458,7 +1506,7 @@ function fullRestart() {
   usedPostQs = [];
   gameArea.style.display ='none';
   gameFooter.style.display ='none';
-  endscreenEl.classList.remove('visible');
+  endscreen.classList.remove('visible');
   actModal.classList.remove('visible');
   pauseModal.classList.remove('visible');
   memoryModal.classList.remove('visible');
@@ -1488,7 +1536,7 @@ function fullRestart() {
   dobDay.value = '';
   dobYear.value = '';
   ageError.textContent = '';
-  document.querySelector ('age-gate').classList.add('visible');
+  document.querySelector ('#age-gate').classList.add('visible');
 }
 
 // ═══ PRIVACY & DATA CONTROLS ═══
@@ -1532,7 +1580,7 @@ function updatePrivacyUI() {
   } catch(e) {}
   btnExport.disabled = count === 0 && !hasCurrentSession();
   btnClear.disabled = count === 0;
-  if(count > 0) privacyStatus.textContent = `${count} session${count>1?'s' : ''} saved on this device`;
+  if(count > 0) privacyStatus.textContent = `${count} session${count > 1 ? 's' : ''} saved on this device`;
 }
 
 function hasCurrentSession() { 
@@ -1794,15 +1842,6 @@ window.addEventListener('appinstalled', () => {
   console.log('App installed');
 });
 </script>
-
-<!-- ═══ INSTALL BANNER ═══ -->
-<div class="install-banner" id="install-banner">
-  <div class="install-banner-text">
-    <div class="install-banner-title">📲 Install Explicitly Naughty</div>
-    <div class="install-banner-sub">Add to home screen — play offline, no browser needed</div>
-  </div>
-  <button class="btn-install" id="btn-install">Install</button>
-  <button class="btn-install-dismiss" id="btn-install-dismiss" aria-label="Dismiss">✕</button>
 </div>
 </body>
 </html>

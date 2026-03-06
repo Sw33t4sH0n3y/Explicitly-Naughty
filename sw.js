@@ -5,7 +5,6 @@ const ASSETS = [
   './styles.css',
   './manifest.json',
   './logo-header.png',
-  './logo-header.png',
   'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap',
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js'
 ];
@@ -15,9 +14,8 @@ self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return cache.addAll(ASSETS).catch(err => {
-        // Cache what we can — fonts may need CORS
-        console.warn('Some assets failed to cache:', err);
-        return cache.addAll(ASSETS.filter(a => !a.startsWith('https://fonts')));
+        // Cache local files only — CDN files cached on first fetch
+        return cache.addAll(ASSETS.filter(a => a.startsWith('./')));
       });
     })
   );
