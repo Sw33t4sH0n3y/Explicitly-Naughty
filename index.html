@@ -16,6 +16,12 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <canvas id="pearl-canvas"></canvas>
+  <div class="entrance to fade" id="entrance-fade"></div>
+  <div class="tap-to-start" id="tap-to-start">
+    <div class="tap-icon">✨</div>
+    <span>Tap if you dare</span>
+  </div>
 <div class="container">
   <header class="game-header">
     <img src="logo-header.png" alt="Explicitly Naughty" class="game-logo">
@@ -276,6 +282,205 @@
 </div>
 
 <script>
+  
+  // ═══ PEARL BACKGROUND + AUDIO ═══
+(function() {
+  const canvas = document.getElementById('pearl-canvas');
+  const ctx = canvas.getContext('2d');
+  let width, height, strings = [];
+  const mouse = { x: -1000, y: -1000 };
+  const STRING_COUNT = innerWidth < 600 ? 18 : 30;
+  const GRAVITY = 0.4, FRICTION = 0.97;
+
+  let audioCtx = null;
+  const PEARL_NOTES = [261.6, 293.7, 329.6, 392.0, 440.0, 523.3, 587.3, 659.3];
+  let lastChimeTime = 0;
+
+  function initAudio() { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+
+  }
+
+  function playChime(x) {
+    if (!audioCtx) return;
+    const now = Date.now();
+    if (now - lastChimeTime < 80) return;
+    lastChimeTime = now;
+    const noteIdx = Math.floor((x / width) * PEARL_NOTES.length);
+    const freq = PEARL_NOTES[Math.min(noteIdx, PEARL_NOTES.length - 1)];
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    const filter = audioCtx.createBiquadFilter();
+    osc.type = 'sine'; 
+    osc.frequency.value = freq;
+    filter.type = 'lowpass'; 
+    filter.frequency.value = 1200;
+    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.06, audioCtx.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+    osc.connect(filter); 
+    filter.connect(gain); 
+    gain.connect(audioCtx.destination);
+    osc.start(); osc.stop(audioCtx.currentTime + 1.3);
+  }
+
+  class Point {
+    constructor(x, y, isFixed) {
+      this.x = x; 
+      this.y = y; 
+      this.oldX = x; 
+      this.oldY = y;
+      this.isFixed = isFixed || false;
+    }
+    update() {
+      if (this.isFixed) return;
+      let vx = (this.x - this.oldX) * FRICTION;
+      let vy = (this.y - this.oldY) * FRICTION;
+      this.oldX = this.x; 
+      this.oldY = this.y;
+      vx += Math.sin(Date.now() * 0.001 + this.x) * 0.02;
+      this.x += vx; 
+      this.y += vy + GRAVITY;
+      let dx = this.x - mouse.x, dy = this.y - mouse.y;
+      let dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 180) {
+        let force = (180 - dist) / 180;
+        this.x += dx * force * 0.5;
+        this.y += dy * force * 0.5;
+        if (force > 0.3) playChime(this.x);
+      }
+    }
+  }
+
+  class PearlString {
+    constructor(x, segmentCount) {
+      this.points = []; 
+      this.segments = segmentCount; 
+      this.spacing = 22;
+      for (let i = 0; i < this.segments; i++) {
+        this.points.push(new Point(x, i * this.spacing, i === 0));
+      }
+    }
+    solve() {
+      for (let i = 0; i < this.points.length - 1; i++) {
+        let p1 = this.points[i], p2 = this.points[i+1];
+        let dx = p2.x - p1.x, dy = p2.y - p1.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        let error = (this.spacing - dist) / dist;
+        let ox = dx * error * 0.5, oy = dy * error * 0.5;
+        if (!p1.isFixed) { p1.x -= ox; 
+          p1.y -= oy; }
+          p2.x += ox; 
+          p2.y += oy;
+      }
+    }
+    draw() {
+      this.points.forEach((p, i) => {
+        if (i === 0) return;
+        ctx.beginPath();
+        ctx.moveTo(this.points[i-1].x, this.points[i-1].y);
+        ctx.lineTo(p.x, p.y);
+        ctx.strokeStyle = 'rgba(255,224,234,0.05)';
+        ctx.lineWidth = 1; ctx.stroke();
+        const size = i === this.points.length - 1 ? 7 : 5;
+        const grad = ctx.createRadialGradient(p.x - size/3, p.y - size/3, size/10, p.x, p.y, size);
+        grad.addColorStop(0, 'rgba(255,245,250,1)');
+        grad.addColorStop(0.3, 'rgba(255,224,234,0.85)');
+        grad.addColorStop(0.6, 'rgba(212,160,189,0.55)');
+        grad.addColorStop(1, 'rgba(150,100,130,0.3)');
+        ctx.shadowBlur = 10; ctx.shadowColor = 'rgba(255,92,138,0.15)';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, size, 0, Math.PI * 2);
+        ctx.fillStyle = grad; 
+        ctx.fill(); 
+        ctx.shadowBlur = 0;
+      });
+    }
+  }
+
+  function init() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    strings = [];
+    const margin = 15, space = width - margin * 2;
+    for (let i = 0; i < STRING_COUNT; i++) {
+      const x = margin + (space / (STRING_COUNT - 1)) * i + (Math.random() - 0.5) * 12;
+      const centerRatio = 1 - Math.abs((i / (STRING_COUNT - 1)) - 0.5) * 2;
+      const edgeLen = height * 0.95, centerMin = height * 0.45, centerMax = height * 0.75;
+      const innerLen = centerMin + Math.random() * (centerMax - centerMin);
+      const targetLen = edgeLen - (centerRatio * (edgeLen - innerLen));
+      strings.push(new PearlString(x, Math.max(8, Math.floor(targetLen / 22))));
+    }
+  }
+
+  const phantom = { x: -1000, y: -1000, active: false, radius: 150 };
+  let walkStartTime = 0;
+  const WALK_DURATION = 2200;
+
+  function startWalkIn() {
+    phantom.active = true; 
+    phantom.x = width / 2; 
+    phantom.y = height + 100;
+    walkStartTime = Date.now();
+  }
+  function updatePhantom() {
+    if (!phantom.active) return;
+    const elapsed = Date.now() - walkStartTime;
+    const progress = Math.min(elapsed / WALK_DURATION, 1);
+    const ease = 1 - Math.pow(1 - progress, 3);
+    phantom.x = width / 2 + Math.sin(progress * 2) * 20;
+    phantom.y = height + 100 - (height + 200) * ease;
+    phantom.radius = 150 - progress * 50;
+    if (progress >= 1) phantom.active = false;
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    updatePhantom();
+    strings.forEach(s => {
+      s.points.forEach(p => {
+        p.update();
+        if (phantom.active) {
+          let dx = p.x - phantom.x, dy = p.y - phantom.y;
+          let dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < phantom.radius && !p.isFixed) {
+            let force = (phantom.radius - dist) / phantom.radius;
+            p.x += dx * force * 0.6; p.y += dy * force * 0.3;
+            if (force > 0.4) playChime(p.x);
+          }
+        }
+      });
+      for (let i = 0; i < 5; i++) s.solve();
+      s.draw();
+    });
+    requestAnimationFrame(animate);
+  }
+
+  document.addEventListener('mousemove', e => { mouse.x = e.clientX; 
+    mouse.y = e.clientY; 
+  });
+
+  document.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; 
+    mouse.y = e.touches[0].clientY; 
+  }, {passive:true});
+  window.addEventListener('resize', init);
+
+  document.getElementById('tap-to-start').addEventListener('click', () => {
+    initAudio();
+    document.getElementById('tap-to-start').classList.add('hidden');
+    document.getElementById('entrance-fade').classList.add('go');
+    setTimeout(startWalkIn, 300);
+    setTimeout(() => {
+      canvas.style.transition = 'opacity 1.5s ease';
+      canvas.style.opacity = '0';
+      setTimeout(() => { 
+        canvas.style.display = 'none'; 
+      }, 1500);
+    }, 300 + WALK_DURATION);
+  });
+
+  init();
+  animate();
+})();
 // ═══ DISCOVERY PROMPTS ═══
 const DISCOVERY_PROMPTS = [
   "What kind of touch makes you feel safest?",
