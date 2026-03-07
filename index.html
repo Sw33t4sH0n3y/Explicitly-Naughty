@@ -282,7 +282,7 @@
 </div>
 
 <script>
-  
+
   // ═══ PEARL BACKGROUND + AUDIO ═══
 (function() {
   const canvas = document.getElementById('pearl-canvas');
@@ -400,6 +400,8 @@
   function init() {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
+    canvas.style.width = width = 'px';
+    canvas.style.height = height = 'px';
     strings = [];
     const margin = 15, space = width - margin * 2;
     for (let i = 0; i < STRING_COUNT; i++) {
@@ -464,12 +466,13 @@
   }, {passive:true});
   window.addEventListener('resize', init);
 
-  document.getElementById('tap-to-start').addEventListener('click', () => {
+  document.querySelector('#tap-to-start').addEventListener('click', () => {
     initAudio();
-    document.getElementById('tap-to-start').classList.add('hidden');
-    document.getElementById('entrance-fade').classList.add('go');
+    document.querySelector('#tap-to-start').classList.add('hidden');
+    document.querySelector('#entrance-fade').classList.add('go');
     setTimeout(startWalkIn, 300);
     setTimeout(() => {
+      document.body.classList.add('game-entered');
       canvas.style.transition = 'opacity 1.5s ease';
       canvas.style.opacity = '0';
       setTimeout(() => { 
