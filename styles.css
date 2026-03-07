@@ -83,7 +83,7 @@
     margin-top: 2px; 
   }
   .game-entered .container {
-    display:flex;
+    display:flex
   }
   /* ── SETUP SCREENS ── */
   .setup-screen {
@@ -1834,7 +1834,7 @@
   left: 0; 
   width: 100vw;
   height: 100vh;
-  z-index: 100; 
+  z-index: 102; 
   cursor: pointer;
   display: flex; 
   align-items: center; 

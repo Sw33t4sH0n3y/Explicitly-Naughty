@@ -13,11 +13,11 @@
 <title>Explicitly Naughty</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link rel="icon" type="image/png" href="logo-header.png">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <canvas id="pearl-canvas"></canvas>
-  <div class="entrance to fade" id="entrance-fade"></div>
+  <div class="entrance-fade" id="entrance-fade"></div>
   <div class="tap-to-start" id="tap-to-start">
     <div class="tap-icon">✨</div>
     <span>Tap if you dare</span>
@@ -296,8 +296,9 @@
   const PEARL_NOTES = [261.6, 293.7, 329.6, 392.0, 440.0, 523.3, 587.3, 659.3];
   let lastChimeTime = 0;
 
-  function initAudio() { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-
+  function initAudio() { 
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
+    audioCtx.resume();
   }
 
   function playChime(x) {
@@ -400,8 +401,8 @@
   function init() {
     width = canvas.width = window.innerWidth;
     height = canvas.height = window.innerHeight;
-    canvas.style.width = width = 'px';
-    canvas.style.height = height = 'px';
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
     strings = [];
     const margin = 15, space = width - margin * 2;
     for (let i = 0; i < STRING_COUNT; i++) {
@@ -832,7 +833,7 @@ function startAgeTimer() {
       clearInterval(ageInterval);
       ageExpired = true;
       ageError.textContent = "⏰ Time's up! you gotta be faster than that.";
-      btnVerify.diabled = true;
+      btnVerify.disabled = true;
       dobMonth.disabled = true;
       dobDay.disabled = true;
       dobYear.disabled = true;
@@ -933,12 +934,6 @@ btnToLevel.addEventListener('click', () => {
   document.querySelector('#setup-level').classList.add('visible');
 });
 
-playerNames = [];
-document.querySelectorAll('.name-input').forEach(inp => {
-  const val = input.val.trim();
-  playerNames.push(val || ('Player ' + (parsseInt(inp.dataset.idx) +1)));
-});
-
 // ═══ LEVEL SELECT ═══
 const UNLOCK_KEY = 'en_unlocked';
 const FREE_LEVEL = 0; // Dating is free
@@ -1001,7 +996,7 @@ const btnCodeApply = document.querySelector ('#btn-code-apply');
 const unlockStatus = document.querySelector ('#unlock-status');
 const btnPurchaseClose = document.querySelector ('#btn-purchase-close');
 
-// let purchaseTargetLevel = null;
+let purchaseTargetLevel = null;
 
 function showPurchaseModal(levelIdx) {
   purchaseTargetLevel = levelIdx;
@@ -1174,9 +1169,9 @@ const gameArea = document.querySelector('#game-area'),
       gameBoard = document.querySelector('#board'),
       displayTimer = document.querySelector('#timer'),
       moveValue = document.querySelector('#moves'),
-      maxMoves = document.querySelector('#max-moves'),
+      maxMovesEl = document.querySelector('#max-moves'),
       matchedCount = document.querySelector('#matched-count'),
-      totalPairs = document. querySelector('#total-pairs'),
+      totalPairsEl = document. querySelector('#total-pairs'),
       playerScores = document. querySelector('#player-scores'),
       phraseDisplay = document.querySelector('#phrase-display'),
       levelBadge = document.querySelector('#level-badge'),
@@ -1255,12 +1250,12 @@ function startLevel(li) {
   safeWordFab.classList.add('show');
   levelBadge.textContent = `${lv.icon} ${lv.name}`;
   levelBadge.className = `level-badge ${lv.cssClass}`;
-  maxMoves.textContent = lv.maxMoves;
-  totalPairs.textContent = lv.pairs.length;
-  moves.textContent = '0';
+  maxmoveValue.textContent = lv.maxMoves;
+  totalPairsEl.textContent = lv.pairs.length;
+  moveValue.textContent = '0';
   matchedCount.textContent = '0';
-  displayTimer.textContent = lv.turnTime;
-  timer.classList.remove('warning');
+  displaydisplayTimer.textContent = lv.turnTime;
+  displayTimer.classList.remove('warning');
   phraseDisplay.textContent = '';
   gameBoard.className = state.deck.length <= 16 ? 'board cols-4':'board cols-5';
   buildBoard();
@@ -1276,7 +1271,7 @@ function shuffle(a) {
   }}
 
 function buildBoard() {
-  board.innerHTML = '';
+  gameBoard.innerHTML  = '';
   state.deck.forEach((item, idx) => {
     const c = document.createElement('div');
     let cls = 'card';
@@ -1297,7 +1292,7 @@ function buildBoard() {
         e.preventDefault();
         onCardTap(e);
       }});
-    board.appendChild(c);
+    gameBoard.appendChild(c);
   });
 }
 
@@ -1306,7 +1301,7 @@ function buildPlayerScores() {
   for(let i = 0; i < state.numPlayers; i++) {
     const t = document.createElement('div');
     t.className ='player-tag player-colors-' + i;
-    t.id = 'player-tag' + i;
+    t.id = 'player-tag-' + i;
     t.textContent = playerNames[i] + ': '  + state.scores[i];
     playerScores.appendChild(t);
   }
@@ -1338,7 +1333,7 @@ function markMatchFound(pn) {
   state.foundPairs.add(pn);
   LEVELS[state.currentLevel].pairs.forEach((d, i) => {
     if(d[2] === pn) {
-      const el = document.querySelector(`mri-${i}`);
+      const el = document.querySelector('#mri-' + i);
     if(el && !el.classList.contains('found')) {
       el.classList.add('found');
       const c = document.createElement('span');
@@ -1376,8 +1371,8 @@ btnResume.addEventListener('click', () => {
   if(state.timerStarted && state.timeLeft > 0) {
     state.timerInterval = setInterval(() => {
       state.timeLeft --;
-      timer.textContent = state.timeLeft;
-      if(state.timeLeft <= 5) timerEl.classList.add('warning');
+      displayTimer.textContent = state.timeLeft;
+      if(state.timeLeft <= 5) displayTimer.classList.add('warning');
       if(state.timeLeft <= 0) {
         clearInterval(state.timerInterval);
         onTimeUp();
@@ -1420,8 +1415,8 @@ function onCardTap(e) {
       if(state.timerStarted && state.timeLeft > 0) {
         state.timerInterval = setInterval(() => {
         state.timeLeft --;
-        timer.textContent = state.timeLeft;
-          if(state.timeLeft <= 5)timerEl.classList.add('warning');
+        displayTimer.textContent = state.timeLeft;
+          if(state.timeLeft <= 5)displayTimer.classList.add('warning');
           if(state.timeLeft <= 0) {
             clearInterval(state.timerInterval);
             onTimeUp();
@@ -1452,8 +1447,8 @@ function onCardTap(e) {
       if(state.timerStarted && state.timeLeft > 0) {
         state.timerInterval = setInterval(() => {
           state.timeLeft -- ;
-          timer.textContent = state.timeLeft;
-          if(state.timeLeft <= 5)timerEl.classList.add('warning');
+          displayTimer.textContent = state.timeLeft;
+          if(state.timeLeft <= 5)displayTimer.classList.add('warning');
           if(state.timeLeft <= 0) {
             clearInterval(state.timerInterval);
             onTimeUp();
@@ -1517,7 +1512,7 @@ function checkMatch() {
       // ── ALL OTHER LEVELS: show act-it-out modal ──
       phraseDisplay.textContent = '🔥' + m1 + '!';
       phraseDisplay.style.color = 'var(--honey)';
-      modalEmoji.textContent = 'e1' + 'e2';
+      modalEmoji.textContent = e1 + ' ' + e2;
       modalName.textContent = m1;
       modalPlayer.textContent = playerNames[state.currentPlayer] +  '— Your turn! 😏';
       discoveryText.textContent = getDiscoveryPrompt();
@@ -1551,7 +1546,7 @@ function checkMatch() {
       state.checking = false;
       state.timerStarted = false;
       state.movesTaken ++;
-      moves.textContent = state.movesTaken;
+      moveValue.textContent = state.movesTaken;
       phraseDisplay.textContent = '';
       if(checkLevelEnd()) return;
       nextPlayer();
@@ -1562,13 +1557,13 @@ function checkMatch() {
 function startTimer() {
   const lv = LEVELS[state.currentLevel];
   state.timeLeft = lv.turnTime;
-  timer.textContent = state.timeLeft;
-  timer.classList.remove('warning');
+  displayTimer.textContent = state.timeLeft;
+  displayTimer.classList.remove('warning');
   clearInterval(state.timerInterval);
   state.timerInterval = setInterval(() => {
     state.timeLeft --;
-    timer.textContent = state.timeLeft;
-    if(state.timeLeft <= 5) timer.classList.add('warning');
+    displayTimer.textContent = state.timeLeft;
+    if(state.timeLeft <= 5) displayTimer.classList.add('warning');
     if(state.timeLeft <= 0) {
       clearInterval(state.timerInterval);
       onTimeUp();
@@ -1592,7 +1587,7 @@ function onTimeUp() {
   state.checking = false;
   state.timerStarted = false;
   state.movesTaken ++;
-  moves.textContent = state.movesTaken;
+  moveValue.textContent = state.movesTaken;
   setTimeout(() => {phraseDisplay.textContent = '';
   if(checkLevelEnd()) return;
   nextPlayer();
@@ -1601,8 +1596,8 @@ function onTimeUp() {
 
 function nextPlayer() {
   state.currentPlayer = (state.currentPlayer + 1) % state.numPlayers;highlightActivePlayer();
-  timer.textContent = LEVELS[state.currentLevel].turnTime;
-  timer.classList.remove('warning');
+  displayTimer.textContent = LEVELS[state.currentLevel].turnTime;
+  displayTimer.classList.remove('warning');
 }
 
 function checkLevelEnd() { 
@@ -1631,7 +1626,7 @@ function showLevelEnd() {
   const mx = Math.max(...state.scores);
   for(let i = 0; i < state.numPlayers; i++) {
     const w = state.scores[i] === mx;
-    html += `<div class="${w?'winner':''}">Player ${i+1}: ${state.scores[i]} points${w?' 👑':''}</div>`;
+    html += `<div class="${w?'winner':''}">${playerNames[i]}: ${state.scores[i]} points${w?' 👑':''}</div>`;
   }
   state._endScores = html;
 
@@ -1674,12 +1669,12 @@ btnCheckinPostNext.addEventListener('click', () => {
 
   // Save session if opted in
   saveSessionIfEnabled();
-  endscreen.classList.add('visible');
+  endScreen.classList.add('visible');
 });
 
 document.querySelector ('#btn-play-again').addEventListener('click', () => {
   state.scores = Array(state.numPlayers).fill(0);
-  endscreenEl.classList.remove('visible');
+  endScreen.classList.remove('visible');
   checkinPreQ.textContent = getCheckinQ(CHECKIN_PRE_QUESTIONS, usedPreQs);
   buildCheckinScale('checkin-pre-scale', 'btn-checkin-pre-next');
   btnCheckinPreNext.disabled = true;
@@ -1722,10 +1717,10 @@ function fullRestart() {
   usedPreQs = [];
   usedPostQs = [];
   playerNames = [];
-  document.querySelector('#player-names').style.display = 'none'
+  document.querySelector('#player-names').style.display = 'none';
   gameArea.style.display ='none';
   gameFooter.style.display ='none';
-  endscreen.classList.remove('visible');
+  endScreen.classList.remove('visible');
   actModal.classList.remove('visible');
   pauseModal.classList.remove('visible');
   memoryModal.classList.remove('visible');
@@ -1816,7 +1811,7 @@ function buildSessionData() {
     matchedPairs: state.matchedPairs,
     totalPairs: lv.pairs.length,
     movesTaken: state.movesTaken,
-    maxMoves: lv.maxMoves,
+    maxMovesEL: lv.maxMoves,
     preCheckin: {question: state._preQ || '',
     rating: state._preRating || 0},
     postCheckin: {question:state._postQ || '',
@@ -1942,7 +1937,7 @@ function generateEncryptedPDF(sessions, password) {
       doc.setFontSize(9);
       doc.setTextColor(80, 60, 70);
       const scoreStr = s.scores.map((sc, i) => `Player ${i + 1} : ${sc}`).join('  |  ');
-      doc.text(`Scores: ${scoreStr}   (${s.matchedPairs}/${s.totalPairs} pairs, ${s.movesTaken}/${s.maxMoves} moves)`, margin, y); y += 8;
+      doc.text(`Scores: ${scoreStr}   (${s.matchedPairs}/${s.totalPairsEl} pairs, ${s.movesTaken}/${s.maxMoves} moves)`, margin, y); y += 8;
 
       // Check-ins
       if(s.preCheckin.question) {
@@ -2061,6 +2056,4 @@ window.addEventListener('appinstalled', () => {
   console.log('App installed');
 });
 </script>
-</div>
 </body>
-</html>
