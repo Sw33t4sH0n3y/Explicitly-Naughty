@@ -284,25 +284,28 @@
 <script>
 
   // ═══ PEARL BACKGROUND + AUDIO ═══
+
 (function() {
+    const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const canvas = document.getElementById('pearl-canvas');
   const ctx = canvas.getContext('2d');
   let width, height, strings = [];
   const mouse = { x: -1000, y: -1000 };
-  const STRING_COUNT = innerWidth < 600 ? 18 : 30;
+  const STRING_COUNT = innerWidth < 600 ? 24 : 40;
   const GRAVITY = 0.4, FRICTION = 0.97;
 
   let audioCtx = null;
   const PEARL_NOTES = [261.6, 293.7, 329.6, 392.0, 440.0, 523.3, 587.3, 659.3];
   let lastChimeTime = 0;
+  let chimesEnabled = true;
 
   function initAudio() { 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)(); 
-    audioCtx.resume();
+    // audioCtx.resume();
   }
 
   function playChime(x) {
-    if (!audioCtx) return;
+    if (!chimesEnabled || !audioCtx || !width || !isFinite(x)) return;
     const now = Date.now();
     if (now - lastChimeTime < 80) return;
     lastChimeTime = now;
@@ -338,7 +341,7 @@
       let vy = (this.y - this.oldY) * FRICTION;
       this.oldX = this.x; 
       this.oldY = this.y;
-      vx += Math.sin(Date.now() * 0.001 + this.x) * 0.02;
+      vx += Math.sin(Date.now() * 0.001 + this.x) * (REDUCED_MOTION ? 0.005 : 0.02);
       this.x += vx; 
       this.y += vy + GRAVITY;
       let dx = this.x - mouse.x, dy = this.y - mouse.y;
@@ -394,9 +397,45 @@
         ctx.fillStyle = grad; 
         ctx.fill(); 
         ctx.shadowBlur = 0;
-      });
-    }
+// Sparkle — bright star-shaped glint
+    if (!REDUCED_MOTION && Math.random() < 0.04) {
+      const sx = p.x - size * 0.25;
+      const sy = p.y - size * 0.25;
+      const sparkSize = size * 1.2;
+      
+      // Bright cross flare
+      ctx.save();
+      ctx.globalAlpha = 0.7 + Math.random() * 0.3;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      
+      // Horizontal line
+      ctx.beginPath();
+      ctx.moveTo(sx - sparkSize, sy);
+      ctx.lineTo(sx + sparkSize, sy);
+      ctx.stroke();
+      
+      // Vertical line
+      ctx.beginPath();
+      ctx.moveTo(sx, sy - sparkSize);
+      ctx.lineTo(sx, sy + sparkSize);
+      ctx.stroke();
+      
+      // Center glow
+      const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, sparkSize);
+      glow.addColorStop(0, 'rgba(255,255,255,0.9)');
+      glow.addColorStop(0.3, 'rgba(255,200,230,0.5)');
+      glow.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.beginPath();
+      ctx.arc(sx, sy, sparkSize, 0, Math.PI * 2);
+      ctx.fillStyle = glow;
+      ctx.fill();
+      
+      ctx.restore();
+      }
+    });
   }
+}
 
   function init() {
     width = canvas.width = window.innerWidth;
@@ -474,12 +513,14 @@
     setTimeout(startWalkIn, 300);
     setTimeout(() => {
       document.body.classList.add('game-entered');
-      canvas.style.transition = 'opacity 1.5s ease';
-      canvas.style.opacity = '0';
-      setTimeout(() => { 
-        canvas.style.display = 'none'; 
-      }, 1500);
+      chimesEnabled = false;
     }, 300 + WALK_DURATION);
+     // Fade out and remove pearls
+    setTimeout(() => {
+      canvas.style.transition = 'opacity 2s ease';
+      canvas.style.opacity = '0';
+      setTimeout(() => { canvas.style.display = 'none'; }, 2000);
+    }, 300 + WALK_DURATION + 3000);
   });
 
   init();
@@ -760,7 +801,7 @@ const LEVELS = [
       ['🫧', '🪮', 'Wash my hair'],
       ['🍳', '🧑‍🍳', 'Cook with me'],
       ['🪶', '🥊', 'Pillow Fight'],
-      ['🤗', '😊', 'Cuddlefest'],
+      ['👍', '🤼', 'Thumb Wrestle'],
       ['🧦', '🏃', 'Sock slide race'],
       ['🙂', '🎨', 'Paint my face'],
       ['👀', '😂', 'Staring Contest']]}
@@ -1250,11 +1291,11 @@ function startLevel(li) {
   safeWordFab.classList.add('show');
   levelBadge.textContent = `${lv.icon} ${lv.name}`;
   levelBadge.className = `level-badge ${lv.cssClass}`;
-  maxmoveValue.textContent = lv.maxMoves;
+  maxMovesEl.textContent = lv.maxMoves;
   totalPairsEl.textContent = lv.pairs.length;
   moveValue.textContent = '0';
   matchedCount.textContent = '0';
-  displaydisplayTimer.textContent = lv.turnTime;
+  displayTimer.textContent = lv.turnTime;
   displayTimer.classList.remove('warning');
   phraseDisplay.textContent = '';
   gameBoard.className = state.deck.length <= 16 ? 'board cols-4':'board cols-5';
@@ -1406,7 +1447,7 @@ function onCardTap(e) {
     memoryPlayer.textContent = playerNames[state.currentPlayer] + '— Share a memory';
     const memPrompt = getMemoryPrompt();
     memoryPromptText.textContent = memPrompt;
-    if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'🧠',emoji2:'', name:'Memory Mode', discovery:memPrompt});
+    if(state.currentLevel === 0 || state.currentLevel === 4) state.dateChecklist.push({emoji1:'🧠',emoji2:'', name:'Memory Mode', discovery:memPrompt});
     memoryModal.classList.add('visible');
     const closeMemory = () => {
       memoryModal.classList.remove('visible'); 
@@ -1437,7 +1478,7 @@ function onCardTap(e) {
     phraseDisplay.style.color = 'var(--rose)';
     vulnPlayer.textContent = playerNames[state.currentPlayer] + '— Open your heart';
     const vulnPrompt = getVulnPrompt();    vulnPromptText.textContent = vulnPrompt;
-    if(state.currentLevel === 0) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'', name:'Vulnerability Moment', 
+    if(state.currentLevel === 0 || state.currentLevel === 4) state.dateChecklist.push({emoji1:'❤️‍🩹',emoji2:'', name:'Vulnerability Moment', 
     discovery: vulnPrompt});
     vulnModal.classList.add('visible');
     const closeVuln = () => {
@@ -1492,7 +1533,7 @@ function checkMatch() {
     matchesPopup.classList.remove('visible');
 
     // ── DATING LEVEL: no act-it-out, build date checklist ──
-    if(state.currentLevel === 0) {
+    if(state.currentLevel === 0 || state.currentLevel === 4) {
       state.dateChecklist.push({emoji1:e1,
          emoji2: e2, 
          name:m1,
@@ -1621,7 +1662,7 @@ function showLevelEnd() {
   // Store results for after check-in
   const lv = LEVELS[state.currentLevel];
   state._endTitle = state.matchedPairs >= lv.pairs.length
-    ? (state.currentLevel === 0 ? `💕 Your Date Jar is Ready!`:`🔥 ${lv.name} Complete!`) : '⏰ Out of Moves!';
+    ? (state.currentLevel === 0 ? `💕 Your Date Jar is Ready!`: state.currentLevel === 4 ? `🦄 Your fun jar is Ready!` :`🔥 ${lv.name} Complete!`) : '⏰ Out of Moves!';
   let html = '';
   const mx = Math.max(...state.scores);
   for(let i = 0; i < state.numPlayers; i++) {
@@ -1648,7 +1689,7 @@ btnCheckinPostNext.addEventListener('click', () => {
   // Date checklist for Dating level
   const checklist = document.querySelector ('#date-checklist');
   const checklistItems = document.querySelector ('#date-checklist-items');
-  if(state.currentLevel === 0 && state.dateChecklist.length > 0) {
+  if((state.currentLevel === 0 || state.currentLevel === 4) && state.dateChecklist.length > 0) {
     checklistItems.innerHTML = '';
     state.dateChecklist.forEach((item, i) => {
       const row = document.createElement('div');

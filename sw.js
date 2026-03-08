@@ -54,7 +54,7 @@ self.addEventListener('fetch', e => {
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
-      return fetch(e.request).then(res => {
+      return fetch(e.request).catch(() => new Response('', {status:404})).then (res => {
         // Cache Google Font files dynamically
         if (url.hostname.includes('gstatic.com') || url.hostname.includes('googleapis.com') || url.hostname.includes('cdnjs.cloudflare.com')) {
           const clone = res.clone();
