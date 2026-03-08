@@ -56,6 +56,15 @@
     <div class="setup-heading">Ground Rules</div>
     <div class="setup-sub">Everyone reads these before playing.</div>
     <div class="rules-card">
+      <h3>How to Play</h3>
+      <div class="rule-item"><span class="rule-icon">1️⃣</span><span class="rule-text">Tap any card to flip it and reveal an emoji.</span></div>
+      <div class="rule-item"><span class="rule-icon">2️⃣</span><span class="rule-text">Tap a second card — if the two emojis are a pair, it's a match!</span></div>
+      <div class="rule-item"><span class="rule-icon">3️⃣</span><span class="rule-text">When you match a pair, you'll be prompted to act it out together — or add it to your jar for later.</span></div>
+      <div class="rule-item"><span class="rule-icon">⏱️</span><span class="rule-text">You have a time limit each turn. If time runs out, your turn is over.</span></div>
+      <div class="rule-item"><span class="rule-icon">🔄</span><span class="rule-text">If the cards don't match, they flip back. Try to remember where each emoji is!</span></div>
+      <div class="rule-item"><span class="rule-icon">🧠</span><span class="rule-text">Special cards are hidden in the deck — Memory Mode and Vulnerability Cards trigger bonus prompts when flipped.</span></div>
+      <div class="rule-item"><span class="rule-icon">🏆</span><span class="rule-text">The player with the most matches wins. But really, everyone wins.</span></div>
+      <div style="height:14px;"></div>
       <h3>Playing Safe & Having Fun</h3>
       <div class="rule-item"><span class="rule-icon">💛</span><span class="rule-text"><b>Consent is everything.</b> Every action requires enthusiastic agreement from everyone involved.</span></div>
       <div class="rule-item"><span class="rule-icon">🛑</span><span class="rule-text"><b>Anyone can skip.</b> Every prompt has a Skip button. No one has to explain why.</span></div>
@@ -261,7 +270,7 @@
   <footer class="game-footer" id="game-footer" style="display:none;"><button id="btn-reboot">Restart Game</button></footer>
 </div>
 
-<button class="matches-fab" id="matches-fab" aria-label="View matches">🃏</button>
+<button class="matches-fab" id="matches-fab" aria-label="View matches">🃏<span class="pin-dot"></span></button>
 <button class="safe-word-fab" id="safe-word-fab" aria-label="Pause game">⏸ Pause</button>
 <div class="matches-popup" id="matches-popup" role="dialog" aria-label="Match reference">
   <div class="matches-popup-header">
@@ -1410,17 +1419,64 @@ function markMatchFound(pn) {
       el.appendChild(c);
     }}});
 }
+letmatchesPinned = false;
+
 matchesFab.addEventListener('click',() => {
   popupOpen = !popupOpen;
-  matchesPopup.classList.toggle('visible',popupOpen);
+  matchesPopup.classList.toggle('visible', popupOpen);
+});
+
+// Long press to pin/unpin
+let fabPressTimer = null;
+matchesFab.addEventListener('mousedown', () => {
+  fabPressTimer = setTimeout(() => {
+    matchesPinned = !matchesPinned;
+    matchesPopup.classList.toggle('pinned', matchesPinned);
+    matchesFab.classList.toggle('pinned-on', matchesPinned);
+    if (matchesPinned) {
+      popupOpen = true;
+      matchesPopup.classList.add('visible');
+    }
+    fabPressTimer = null;
+  }, 600);
+});
+
+matchesFab.addEventListener('mouseup', () => {
+  if (fabPressTimer) clearTimeout(fabPressTimer);
+});
+
+matchesFab.addEventListener('mouseleave', () => {
+  if (fabPressTimer) clearTimeout(fabPressTimer);
+});
+
+// Same for touch
+matchesFab.addEventListener('touchstart', (e) => {
+  fabPressTimer = setTimeout(() => {
+    matchesPinned = !matchesPinned;
+    matchesPopup.classList.toggle('pinned', matchesPinned);
+    matchesFab.classList.toggle('pinned-on', matchesPinned);
+    if (matchesPinned) {
+      popupOpen = true;
+      matchesPopup.classList.add('visible');
+    }
+    fabPressTimer = null;
+    e.preventDefault();
+  }, 600);
+}, {passive:false});
+matchesFab.addEventListener('touchend', () => {
+  if (fabPressTimer) clearTimeout(fabPressTimer);
 });
 
 matchesClose.addEventListener('click',() => {
   popupOpen = false;
+  matchesPinned = false;
   matchesPopup.classList.remove('visible');
+  matchesPopup.classList.remove('pinned');
+  matchesFAb.classList.remove('pinned-on');
+
 });
 document.addEventListener('click', e => {
-  if(popupOpen && !matchesPopup.contains(e.target) && e.target !== matchesFab) {
+  if(popupOpen && !matchesPinned && !matchesPopup.contains(e.target) && e.target !== matchesFab) {
     popupOpen = false;
     matchesPopup.classList.remove('visible');
   }});
