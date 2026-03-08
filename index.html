@@ -684,8 +684,8 @@ const CHECKIN_POST_QUESTIONS = [
 
 let usedPreQs =[], 
     usedPostQs = [];
-let playerNames = [];
-
+    playerNames = [];
+    
 function getCheckinQ(pool, used) {
   if(used.length >= pool.length) used.length = 0;
   const avail = pool.filter(q => !used.includes(q));
@@ -958,18 +958,45 @@ let selectedCount = 0,
     selectedLevel = -1,
     popupOpen = false;
 
+let playerNames = [];
+try {
+  const saved = localStorage.getItem('en_player_names');
+  if (saved) playerNames = JSON.parse(saved);
+} catch(e) {}
+
 const btnToLevel = document.querySelector('#btn-to-level');
+
 document.querySelectorAll('#player-count-options .setup-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('#player-count-options .setup-btn').forEach(b => b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedCount = parseInt(btn.dataset.count);
     btnToLevel.disabled = false;
+    // Build name inputs
+    const nameDiv = document.getElementById('player-names');
+    const nameInputs = document.getElementById('name-inputs');
+    nameDiv.style.display = 'block';
+    nameInputs.innerHTML = '';
+    for (let i = 0; i < selectedCount; i++) {
+      const inp = document.createElement('input');
+      inp.className = 'name-input';
+      inp.placeholder = 'Player ' + (i + 1) + ' name';
+      inp.dataset.idx = i;
+      if (playerNames[i]) inp.value = playerNames[i];
+      nameInputs.appendChild(inp);
+    }
   });
 });
 
 btnToLevel.addEventListener('click', () => {
-  if(!selectedCount) return;
+  if (!selectedCount) return;
+  // Capture player names
+  playerNames = [];
+  document.querySelectorAll('.name-input').forEach(inp => {
+    const val = inp.value.trim();
+    playerNames.push(val || ('Player ' + (parseInt(inp.dataset.idx) + 1)));
+  });
+  try { localStorage.setItem('en_player_names', JSON.stringify(playerNames)); } catch(e) {}
   document.querySelector('#setup-players').classList.remove('visible');
   buildLevelSelect();
   document.querySelector('#setup-level').classList.add('visible');
@@ -1881,6 +1908,8 @@ btnClear.addEventListener('click', () => {
   try {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(SAVE_PREF_KEY);
+    localStorage.removeItem('en_player_names');
+    playerNames = [];
     toggleSave.checked = false;
     privacyStatus.textContent = '✓ All data cleared';
     updatePrivacyUI();
