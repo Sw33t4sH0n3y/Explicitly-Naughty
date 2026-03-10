@@ -43,7 +43,7 @@
     background:
       radial-gradient(ellipse at 50% 45%,rgba(255, 92, 138, 0.08) 0%,transparent 50%),
       radial-gradient(ellipse at 50% 50%,rgba(255, 202, 40, 0.04) 0%,transparent 40%),
-      radial-gradient(ellipse at 50% 55%,rgba(199, 125, 255, 0.05) 0%,transparent 45%),
+      radial-gradient(ellipse at 50% 55%,rgba(199, 125, 255, 0.05) 0%,transparent 45%);
   }
   body::after {
     content: ''; 
@@ -257,9 +257,17 @@
 
   /* ── GROUND RULES ── */
   .rules-card {
-    background:var(--glass); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
-    border:1px solid var(--glass-border); border-radius:16px;
-    padding:18px 20px; max-width:340px; width:100%; text-align:left;
+    background:var(--glass); 
+    backdrop-filter:blur(16px); 
+    -webkit-backdrop-filter:blur(16px);
+    border:1px solid var(--glass-border); 
+    border-radius:16px;
+    padding:18px 20px; 
+    max-width:340px; 
+    width:100%; 
+    text-align:left;
+    max-height: 55vh;
+    overflow-y: auto;
   }
   .rules-card h3 {
     font-family: 'Playfair Display',serif; 
@@ -1718,7 +1726,11 @@
   .btn-resume:focus-visible,
   .btn-end-game:focus-visible,
   .btn-memory-done:focus-visible,
-  .btn-vuln-done:focus-visible,
+  .btn-vuln-done:focus-visible {
+    outline: 2px solid var(--honey);
+    outline-offset: 3px;
+  }
+
   /* ── PWA INSTALL BANNER ── */
   .install-banner {
     display: none; 
@@ -1874,8 +1886,8 @@
   height: 100vh;
   z-index: 0; 
   pointer-events: none;
-  /* background: radial-gradient(ellipse at 50% 50%, rgba(5,2,8,0.6) 0%, rgba(3,1,5,0.95) 100%);
-  opacity: 0; */
+  background: radial-gradient(ellipse at 50% 50%, rgba(5,2,8,0.6) 0%, rgba(3,1,5,0.95) 100%);
+  opacity: 0;
 }
 .entrance-fade.go { 
   animation: room-warmup 3s ease forwards; 
