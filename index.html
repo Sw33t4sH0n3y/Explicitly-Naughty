@@ -1970,7 +1970,7 @@ function hasCurrentSession() {
 }
 
 function buildSessionData() {
-  const lv = LEVELS[state.currentLevel];
+  const lv = LEVELS[state.currentLevel] || LEVELS[0];
   return {
     date: new Date().toISOString(),
     level: lv.name,
@@ -2118,8 +2118,7 @@ function generateEncryptedPDF(sessions, password) {
         doc.setTextColor(140, 110, 130);
         doc.text('Pre-game check-in:', margin, y); y += 4;
         doc.setFont('helvetica','normal');
-        const preLines = doc.splitTextToSize(`"${s.preCheckin.question}" — Rating: ${'❤️'.repeat(s.preCheckin.rating)} (${s.preCheckin.rating}/10)`, maxW);
-        doc.text(preLines, margin, y);
+const preLines = doc.splitTextToSize('"' + s.preCheckin.question + '" — Rating: ' + s.preCheckin.rating + '/10', maxW);        doc.text(preLines, margin, y);
         y += preLines.length * 4 + 2;
       }
 
@@ -2130,8 +2129,7 @@ function generateEncryptedPDF(sessions, password) {
         doc.setTextColor(140, 110, 130);
         doc.text('Post-game check-in:', margin, y); y += 4;
         doc.setFont('helvetica','normal');
-        const postLines = doc.splitTextToSize(`"${s.postCheckin.question}" — Rating: ${'❤️'.repeat(s.postCheckin.rating)} (${s.postCheckin.rating}/10)`, maxW);
-        doc.text(postLines,margin,y);
+const postLines = doc.splitTextToSize('"' + s.postCheckin.question + '" — Rating: ' + s.postCheckin.rating + '/10', maxW);        doc.text(postLines,margin,y);
         y += postLines.length * 4 + 2;
       }
 
@@ -2147,7 +2145,7 @@ function generateEncryptedPDF(sessions, password) {
           doc.setFont('helvetica','normal');
           doc.setFontSize(8.5);
           doc.setTextColor(80, 60, 70);
-          doc.text(`${item.emoji || '•'}  ${item.name}`, margin + 2, y); y += 4;
+          doc.text('- ' + item.name, margin + 2, y);
           if(item.discovery) {
             doc.setFont('helvetica','italic');
             doc.setFontSize(7.5)
