@@ -553,7 +553,8 @@
     gap: 8px; 
     padding: 6px; 
     flex: 1; 
-    align-content: start; 
+    align-content: start;
+    padding-bottom: 80px; 
   }
   .board.cols-4 { 
     grid-template-columns: repeat(4,1fr); 
@@ -561,24 +562,27 @@
   .board.cols-5 { 
     grid-template-columns: repeat(5,1fr); 
   }
-
-  .card {
-    aspect-ratio: 1; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    font-size: clamp(1.4rem,6vw,2rem); 
-    border-radius: var(--radius); 
-    cursor: pointer;
-    user-select: none; 
-    transition: transform 0.35s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-    position: relative; 
-    background: var(--card-back); 
-    border: 1px solid rgba(255,255,255,0.06);
-    -webkit-user-select: none; 
-    touch-action: manipulation;
+#game-area {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.card {
+  aspect-ratio: 1; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-size: clamp(1.4rem,6vw,2rem); 
+  border-radius: var(--radius); 
+  cursor: pointer;
+  user-select: none; 
+  transition: transform 0.35s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  position: relative; 
+  background: var(--card-back); 
+  border: 1px solid rgba(255,255,255,0.06);
+  -webkit-user-select: none; 
+  touch-action: manipulation;
   }
-  .card::before { 
+.card::before { 
     content: '🔥'; 
     position: absolute; 
     font-size: 0.85em; 
@@ -978,9 +982,17 @@
 }
 .matches-popup.pinned {
   bottom: auto;
-  top: 82px;
+  top: 10px;
   right: 8px;
   max-height: 35vh;
+  width: min(280px,65vw);
+  opacity: 0.9;
+  pointer-events: auto;
+}
+.matches-popup.pinned .matches-popup-body {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 8px 10px;
 }
 @media (min-width: 601px) {
   .matches-popup.pinned {
