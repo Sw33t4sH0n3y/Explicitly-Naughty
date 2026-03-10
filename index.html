@@ -874,6 +874,14 @@ const curYear = new Date().getFullYear();
     dobYear.appendChild(o);
 }
 
+// skip if age gate is already verified
+try {
+  if (localStorage.getItem('en_age_verfied') === 'true') {
+    document.querySelector('#age-gate').classList.remove('visible');
+    document.querySelector('#setup-rules').classList.remove('visible');
+  }
+} catch (e) {}
+
 function startAgeTimer() {
   ageTimer = AGE_TIME_LIMIT;
   ageExpired = false;
@@ -939,6 +947,9 @@ btnVerify.addEventListener('click', () => {
     ageError.textContent = " Please enter a valid date of birth.";
   } else {
     clearInterval(ageInterval);
+    try {
+      localStorage.setItem('en_age_verified', 'true');
+    } catch (e) {}
       document.querySelector('#age-gate').classList.remove('visible');
       document.querySelector('#setup-rules').classList.add('visible');
   }
@@ -1330,6 +1341,7 @@ function startLevel(li) {
   maxMovesEl.textContent = lv.maxMoves;
   totalPairsEl.textContent = lv.pairs.length;
   moveValue.textContent = '0';
+  moveValue.classList.remove('moves-warning', 'moves-critical');
   matchedCount.textContent = '0';
   displayTimer.textContent = lv.turnTime;
   displayTimer.classList.remove('warning');
@@ -1608,6 +1620,8 @@ function checkMatch() {
     state.firstCard.classList.add('matched');
     state.secondCard.classList.add('matched');
     state.matchedPairs ++;
+    moveValue.textContent = state.movesTaken;
+    checkMovesWarning();
     state.scores[state.currentPlayer]++;
     matchedCount.textContent = state.matchedPairs;
     updateScoreDisplay();
@@ -1712,6 +1726,7 @@ function onTimeUp() {
   state.timerStarted = false;
   state.movesTaken ++;
   moveValue.textContent = state.movesTaken;
+  checkMovesWarning();
   setTimeout(() => {phraseDisplay.textContent = '';
   if(checkLevelEnd()) return;
   nextPlayer();
@@ -1722,6 +1737,28 @@ function nextPlayer() {
   state.currentPlayer = (state.currentPlayer + 1) % state.numPlayers;highlightActivePlayer();
   displayTimer.textContent = LEVELS[state.currentLevel].turnTime;
   displayTimer.classList.remove('warning');
+}
+
+function checkMovesWarning() {
+  const lv = LEVELS[state.currentLevel];
+  const remaining = lv.maxMoves - state.movesTaken;
+  
+  if (remaining === 5) {
+    moveValue.classList.add('moves-warning');
+    phraseDisplay.textContent = '⚠️ 5 moves left — make them count!';
+    phraseDisplay.style.color = 'var(--ember)';
+    setTimeout(() => { if (phraseDisplay.textContent.includes('5 moves')) phraseDisplay.textContent = ''; }, 2000);
+  } else if (remaining === 3) {
+    moveValue.classList.remove('moves-warning');
+    moveValue.classList.add('moves-critical');
+    phraseDisplay.textContent = '🔥 Only 3 moves left!';
+    phraseDisplay.style.color = 'var(--coral)';
+    setTimeout(() => { if (phraseDisplay.textContent.includes('3 moves')) phraseDisplay.textContent = ''; }, 2000);
+  } else if (remaining === 1) {
+    phraseDisplay.textContent = '😬 Last move!';
+    phraseDisplay.style.color = 'var(--coral)';
+    setTimeout(() => { if (phraseDisplay.textContent.includes('Last')) phraseDisplay.textContent = ''; }, 2000);
+  }
 }
 
 function checkLevelEnd() { 
@@ -1840,7 +1877,6 @@ function fullRestart() {
   usedVulnPrompts = [];
   usedPreQs = [];
   usedPostQs = [];
-  playerNames = [];
   document.querySelector('#player-names').style.display = 'none';
   gameArea.style.display ='none';
   gameFooter.style.display ='none';
@@ -1874,7 +1910,15 @@ function fullRestart() {
   dobDay.value = '';
   dobYear.value = '';
   ageError.textContent = '';
+try {
+  if (localStorage.getItem('en_age_verified') === 'true') {
+    document.querySelector('#setup-rules'). classList.add('visible');
+  } else {
+      document.querySelector ('#age-gate').classList.add('visible');
+  }
+} catch(e) {
   document.querySelector ('#age-gate').classList.add('visible');
+ }
 }
 
 // ═══ PRIVACY & DATA CONTROLS ═══
@@ -1964,7 +2008,8 @@ btnClear.addEventListener('click', () => {
   try {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(SAVE_PREF_KEY);
-    localStorage.removeItem('en_player_names');
+    localStorage.removeItem('en_player_names'); 
+    localStorage.removeItem('en_age_verified'); 
     playerNames = [];
     toggleSave.checked = false;
     privacyStatus.textContent = '✓ All data cleared';
