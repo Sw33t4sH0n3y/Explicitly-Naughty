@@ -86,15 +86,17 @@
     display:flex
   }
   /* ── SETUP SCREENS ── */
-  .setup-screen {
+.setup-screen {
     display: none; 
     flex-direction: column; 
     align-items: center; 
-    justify-content: center;
+    justify-content: flex-start;
     flex: 1; 
     gap: 16px; 
     text-align: center; 
     padding: 14px 0;
+    overflow-y: auto;
+    max-height: 100dvh;  
   }
   .setup-screen.visible { 
     display: flex; 
@@ -961,7 +963,33 @@
     background: rgba(255,92,138,0.25); 
     border-radius: 2px; 
   }
-  .match-ref-item {
+.matches-popup-pin {
+  background:none; 
+  border:none; 
+  font-size:1rem; 
+  cursor:pointer;
+  padding:4px 8px; 
+  opacity:0.5; 
+  transition:opacity 0.2s, transform 0.2s;
+}
+.matches-popup-pin.pinned {
+  opacity:1; 
+  transform:rotate(45deg);
+}
+.matches-popup.pinned {
+  bottom: auto;
+  top: 82px;
+  right: 8px;
+  max-height: 35vh;
+}
+@media (min-width: 601px) {
+  .matches-popup.pinned {
+    top: auto;
+    bottom: 82px;
+    max-height: 40vh;
+  }
+}
+.match-ref-item {
     display: flex; 
     align-items: center; 
     gap: 6px; 

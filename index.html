@@ -274,9 +274,10 @@
 <button class="safe-word-fab" id="safe-word-fab" aria-label="Pause game">⏸ Pause</button>
 <div class="matches-popup" id="matches-popup" role="dialog" aria-label="Match reference">
   <div class="matches-popup-header">
-    <div class="matches-popup-title">Match Reference</div>
-    <button class="matches-popup-close" id="matches-popup-close" aria-label="Close">✕</button>
-  </div>
+<div class="matches-popup-title">Match Reference</div>
+  <button class="matches-popup-pin" id="matches-popup-pin" aria-label="Pin open">📌</button>
+  <button class="matches-popup-close" id="matches-popup-close" aria-label="Close">✕</button>  
+</div>
   <div class="matches-popup-body" id="matches-popup-body"></div>
 </div>
 
@@ -693,7 +694,6 @@ const CHECKIN_POST_QUESTIONS = [
 
 let usedPreQs =[], 
     usedPostQs = [];
-    playerNames = [];
     
 function getCheckinQ(pool, used) {
   if(used.length >= pool.length) used.length = 0;
@@ -774,7 +774,7 @@ const LEVELS = [
       ["🎭", "🛏️", "Roleplay"],
       ["💋", "🔙", "Kiss the arch of my back, slow and deliberate"],
       ["🤤", "🚿", "Have me drooling in the shower"],
-      ["💨", "🍆", "Blow my mind"],
+      ["💨", "🤯", "Blow my mind"],
       ["🧥", "💃", "Dance for me naked"],
       ["🚫🫣", "😮", "No peeking, surprise me"],
       ["🫳", "🐈", "Rub my cat"]]},
@@ -1431,67 +1431,39 @@ function markMatchFound(pn) {
       el.appendChild(c);
     }}});
 }
-letmatchesPinned = false;
 
-matchesFab.addEventListener('click',() => {
+let matchesPinned = false;
+const pinBtn = document.getElementById('matches-popup-pin');
+
+matchesFab.addEventListener('click', () => {
   popupOpen = !popupOpen;
   matchesPopup.classList.toggle('visible', popupOpen);
 });
 
-// Long press to pin/unpin
-let fabPressTimer = null;
-matchesFab.addEventListener('mousedown', () => {
-  fabPressTimer = setTimeout(() => {
-    matchesPinned = !matchesPinned;
-    matchesPopup.classList.toggle('pinned', matchesPinned);
-    matchesFab.classList.toggle('pinned-on', matchesPinned);
-    if (matchesPinned) {
-      popupOpen = true;
-      matchesPopup.classList.add('visible');
-    }
-    fabPressTimer = null;
-  }, 600);
+pinBtn.addEventListener('click', () => {
+  matchesPinned = !matchesPinned;
+  pinBtn.classList.toggle('pinned', matchesPinned);
+  pinBtn.textContent = matchesPinned ? '📍' : '📌';
+  if (matchesPinned) {
+    popupOpen = true;
+    matchesPopup.classList.add('visible');
+  }
 });
 
-matchesFab.addEventListener('mouseup', () => {
-  if (fabPressTimer) clearTimeout(fabPressTimer);
-});
-
-matchesFab.addEventListener('mouseleave', () => {
-  if (fabPressTimer) clearTimeout(fabPressTimer);
-});
-
-// Same for touch
-matchesFab.addEventListener('touchstart', (e) => {
-  fabPressTimer = setTimeout(() => {
-    matchesPinned = !matchesPinned;
-    matchesPopup.classList.toggle('pinned', matchesPinned);
-    matchesFab.classList.toggle('pinned-on', matchesPinned);
-    if (matchesPinned) {
-      popupOpen = true;
-      matchesPopup.classList.add('visible');
-    }
-    fabPressTimer = null;
-    e.preventDefault();
-  }, 600);
-}, {passive:false});
-matchesFab.addEventListener('touchend', () => {
-  if (fabPressTimer) clearTimeout(fabPressTimer);
-});
-
-matchesClose.addEventListener('click',() => {
+matchesClose.addEventListener('click', () => {
   popupOpen = false;
   matchesPinned = false;
+  pinBtn.classList.remove('pinned');
+  pinBtn.textContent = '📌';
   matchesPopup.classList.remove('visible');
-  matchesPopup.classList.remove('pinned');
-  matchesFAb.classList.remove('pinned-on');
-
 });
+
 document.addEventListener('click', e => {
-  if(popupOpen && !matchesPinned && !matchesPopup.contains(e.target) && e.target !== matchesFab) {
+  if (popupOpen && !matchesPinned && !matchesPopup.contains(e.target) && e.target !== matchesFab) {
     popupOpen = false;
     matchesPopup.classList.remove('visible');
-  }});
+  }
+});
 
 // ═══ PAUSE ═══
   safeWordFab.addEventListener('click',() => { 
@@ -1626,8 +1598,11 @@ function checkMatch() {
     matchedCount.textContent = state.matchedPairs;
     updateScoreDisplay();
     markMatchFound(m1);
+
+  if(!matchesPinned) {
     popupOpen = false;
     matchesPopup.classList.remove('visible');
+  }
 
     // ── DATING LEVEL: no act-it-out, build date checklist ──
     if(state.currentLevel === 0 || state.currentLevel === 4) {
@@ -1833,7 +1808,8 @@ btnCheckinPostNext.addEventListener('click', () => {
   endScreen.classList.add('visible');
 });
 
-document.querySelector ('#btn-play-again').addEventListener('click', () => {
+document.querySelector('#btn-play-again').addEventListener('click', () => {
+  // Same level, new board — skip rules, players, level select
   state.scores = Array(state.numPlayers).fill(0);
   endScreen.classList.remove('visible');
   checkinPreQ.textContent = getCheckinQ(CHECKIN_PRE_QUESTIONS, usedPreQs);
@@ -1842,7 +1818,35 @@ document.querySelector ('#btn-play-again').addEventListener('click', () => {
   checkinPre.classList.add('visible');
 });
 
-document.querySelector ('#btn-restart').addEventListener('click',fullRestart);
+document.querySelector('#btn-restart').addEventListener('click', () => {
+  // Ask what they want to do
+  const choice = confirm('Change level?\n\nOK = Pick a new level\nCancel = Replay ' + LEVELS[state.currentLevel].name);
+  if (choice) {
+    // Go to level select only — skip age gate, rules, player setup
+    clearInterval(state.timerInterval);
+    state.gameOver = false;
+    endScreen.classList.remove('visible');
+    gameArea.style.display = 'none';
+    gameFooter.style.display = 'none';
+    matchesFab.classList.remove('show');
+    safeWordFab.classList.remove('show');
+    popupOpen = false;
+    matchesPopup.classList.remove('visible');
+    buildLevelSelect();
+    selectedLevel = -1;
+    btnStartGame.disabled = true;
+    document.querySelector('#setup-level').classList.add('visible');
+  } else {
+    // Same level, new board
+    state.scores = Array(state.numPlayers).fill(0);
+    endScreen.classList.remove('visible');
+    checkinPreQ.textContent = getCheckinQ(CHECKIN_PRE_QUESTIONS, usedPreQs);
+    buildCheckinScale('checkin-pre-scale', 'btn-checkin-pre-next');
+    btnCheckinPreNext.disabled = true;
+    checkinPre.classList.add('visible');
+  }
+});
+
 document.querySelector ('#btn-reboot').addEventListener('click', fullRestart);
 
 function fullRestart() {
