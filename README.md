@@ -1,7 +1,7 @@
 # Explicitly Naughty - After Dark Edition
 
 [explicitly naughty](https://sw33t4sh0n3y.github.io/Explicitly-Naughty/).
-<img width="1399" height="1003" alt="Screenshot 2026-03-10 at 11 00 05 PM" src="https://github.com/user-attachments/assets/29354502-043d-44d8-9a8c-37d76cc6f7a2" />
+<img width="1104" height="752" alt="boudoir-bg" src="https://github.com/user-attachments/assets/1735c474-8c18-42ce-bc3d-f79e3814c74b" />
 <img width="1369" height="970" alt="Screenshot 2026-03-10 at 11 00 23 PM" src="https://github.com/user-attachments/assets/f6423e33-8029-412f-adca-7afcd38abd4f" />
 <img width="1470" height="1211" alt="Screenshot 2026-03-10 at 11 01 10 PM" src="https://github.com/user-attachments/assets/f7d22db3-c291-4dfd-a9f1-086ba14a109a" />
 
