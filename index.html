@@ -16,12 +16,18 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <canvas id="pearl-canvas"></canvas>
-  <div class="entrance-fade" id="entrance-fade"></div>
-  <div class="tap-to-start" id="tap-to-start">
-    <div class="tap-icon">✨</div>
-    <span>Tap if you dare</span>
-  </div>
+<div class="boudoir-scene" id="scene"></div>
+<div class="boudoir-tint"></div>
+<div class="vignette"></div>
+<div class="grain"></div>
+
+<canvas id="pearl-canvas"></canvas>
+<div class="entrance-fade" id="entrance-fade"></div>
+<div class="tap-to-start" id="tap-to-start">
+  <div class="tap-icon">✨</div>
+  <span>Tap if you dare</span>
+</div>
+
 <div class="container">
   <header class="game-header">
     <img src="logo-header.png" alt="Explicitly Naughty" class="game-logo">
@@ -506,12 +512,23 @@
     requestAnimationFrame(animate);
   }
 
-  document.addEventListener('mousemove', e => { mouse.x = e.clientX; 
+  document.addEventListener('mousemove', e => {
+    mouse.x = e.clientX; 
     mouse.y = e.clientY; 
-  });
+    const x = (window.innerWidth / 2 - e.pageX) / 80;
+    const y = (window.innerHeight / 2 - e.pageY) / 80;
+    document.querySelector('#scene').style.transform =
+      'translateX(' + x + 'px) translateY(' + y  + 'px) scale(1.05)';
+    });
 
-  document.addEventListener('touchmove', e => { mouse.x = e.touches[0].clientX; 
-    mouse.y = e.touches[0].clientY; 
+  document.addEventListener('touchmove', e => {
+    mouse.x =e.touches[0].clientX; 
+    mouse.y =e.touches[0].clientY;
+    const t = e.touches[0];
+    const x = (window.innerWidth / 2 - t.clientX) / 80;
+    const y = (window.innerHeight / 2 - t.clientY) / 80;
+    document.querySelector('#scene').style.transform = 
+    'translateX(' + x  + 'px) translateY(' + y + 'px) scale(1.05)';
   }, {passive:true});
   window.addEventListener('resize', init);
 
@@ -523,6 +540,8 @@
     setTimeout(() => {
       document.body.classList.add('game-entered');
       chimesEnabled = false;
+      document.querySelector('#scene').style.transition = 'opacity 2s ease';
+      document.querySelector('#scene').style.opacity = '0';
     }, 300 + WALK_DURATION);
      // Fade out and remove pearls
     setTimeout(() => {
@@ -1396,9 +1415,16 @@ function buildPlayerScores() {
 }
 function highlightActivePlayer() {
   for(let i = 0; i < state.numPlayers; i++) {
-    const e = document.querySelector ('player-tag' + i);
+    const e = document.querySelector ('#player-tag' + i);
     if(e)e.classList.toggle('active', i === state.currentPlayer);
-  }}
+  }
+  phraseDisplay.textContent = playerNames[state.currentPlayer] + ',your turn!';
+  phraseDisplay.style.color = 'var(--honey)';
+  setTimeout(() => {
+    if (phraseDisplay.textContent.includes('your turn')) phraseDisplay = '';
+  }, 1800)
+}
+
 function updateScoreDisplay() { 
   for(let i = 0; i < state.numPlayers; i++) {
     const e = document.querySelector ('#player-tag-' + i);
