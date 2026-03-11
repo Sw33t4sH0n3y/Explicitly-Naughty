@@ -14,6 +14,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </head>
 <body>
 <div class="boudoir-scene" id="scene"></div>
@@ -201,7 +202,66 @@
       </div>
     </div>
   </div>
+<!-- ═══ SEALED ENVELOPE ═══ -->
+<div class="modal-overlay" id="envelope-write-modal" role="dialog" aria-label="Seal an envelope">
+  <div class="envelope-box">
+    <div class="envelope-icon">✉️</div>
+    <div class="envelope-title">Sealed Envelope</div>
+    <div class="envelope-sub" id="envelope-writer-name"></div>
+    <div class="envelope-instruction">Write something secret for your partner. They won't see it until the game ends.</div>
+    <textarea class="envelope-input" id="envelope-input" placeholder="Something I've been wanting to say..." maxlength="200"></textarea>
+    <div class="envelope-char-count"><span id="envelope-chars">0</span>/200</div>
+    <button class="btn-done" id="btn-seal-envelope">Seal It 🔒</button>
+  </div>
+</div>
 
+<!-- ═══ ENVELOPE PASS DEVICE ═══ -->
+<div class="modal-overlay" id="envelope-pass-modal" role="dialog" aria-label="Pass the device">
+  <div class="envelope-box">
+    <div class="envelope-icon">🫣</div>
+    <div class="envelope-title">No Peeking!</div>
+    <div class="envelope-sub" id="envelope-pass-name"></div>
+    <button class="btn-done" id="btn-envelope-ready">I'm Ready ✨</button>
+  </div>
+</div>
+
+<!-- ═══ ENVELOPE REVEAL ═══ -->
+<div class="modal-overlay" id="envelope-reveal-modal" role="dialog" aria-label="Open envelopes">
+  <div class="envelope-box reveal">
+    <div class="envelope-icon">💌</div>
+    <div class="envelope-title">Open Your Envelopes</div>
+    <div class="envelope-sub">Tap each envelope to reveal what your partner wrote.</div>
+    <div class="envelope-cards" id="envelope-cards"></div>
+    <button class="btn-done" id="btn-envelope-continue" style="display:none;">Continue 💜</button>
+  </div>
+</div>
+
+<!-- ═══ WILDFIRE ROUND ═══ -->
+<div class="modal-overlay" id="wildfire-modal" role="dialog" aria-label="Wildfire round">
+  <div class="wildfire-box">
+    <div class="wildfire-icon">🔥</div>
+    <div class="wildfire-title">Wildfire Round</div>
+    <div class="wildfire-sub">You two are on fire tonight. Both of you rated this an 8 or higher.</div>
+    <div class="wildfire-dare">One bonus round — the spiciest prompts. Only earned, never bought.</div>
+    <div class="wildfire-actions">
+      <button class="btn-wildfire-yes" id="btn-wildfire-yes">Bring It 🔥</button>
+      <button class="btn-skip" id="btn-wildfire-no">We're Good Tonight</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ WILDFIRE PROMPT ═══ -->
+<div class="modal-overlay" id="wildfire-prompt-modal" role="dialog" aria-label="Wildfire prompt">
+  <div class="wildfire-prompt-box">
+    <div class="wildfire-round-count" id="wildfire-round-count"></div>
+    <div class="wildfire-prompt-text" id="wildfire-prompt-text"></div>
+    <div class="wildfire-note">💛 Only if it feels right. No pressure — ever.</div>
+    <div class="modal-actions">
+      <button class="btn-wildfire-done" id="btn-wildfire-done">Done 🔥</button>
+      <button class="btn-skip" id="btn-wildfire-skip">Skip</button>
+    </div>
+  </div>
+</div>
   <!-- ═══ POST-GAME CHECK-IN ═══ -->
   <div id="checkin-post" class="setup-screen">
     <div class="checkin-card">
@@ -302,7 +362,7 @@
 
 (function() {
     const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const canvas = document.getElementById('pearl-canvas');
+  const canvas = document.querySelector('#pearl-canvas');
   const ctx = canvas.getContext('2d');
   let width, height, strings = [];
   const mouse = { x: -1000, y: -1000 };
@@ -684,6 +744,196 @@ function getVulnPrompt() {
   return pick;
 }
 
+// ═══ SEALED ENVELOPE ═══
+let sealedEnvelopes = []; // [{from: 'Player 1', message: '...'}, ...]
+let envelopePlayerIndex = 0;
+
+const envelopeWriteModal = document.querySelector('#envelope-write-modal');
+const envelopePassModal = document.querySelector('#envelope-pass-modal');
+const envelopeRevealModal = document.querySelector('#envelope-reveal-modal');
+const envelopeInput = document.querySelector('#envelope-input');
+const envelopeChars = document.querySelector('#envelope-chars');
+const envelopeWriterName = document.querySelector('#envelope-writer-name');
+const envelopePassName = document.querySelector('#envelope-pass-name');
+const envelopeCards = document.querySelector('#envelope-cards');
+const btnSealEnvelope = document.querySelector('#btn-seal-envelope');
+const btnEnvelopeReady = document.querySelector('#btn-envelope-ready');
+const btnEnvelopeContinue = document.querySelector('#btn-envelope-continue');
+
+envelopeInput.addEventListener('input', () => {
+  envelopeChars.textContent = envelopeInput.value.length;
+  btnSealEnvelope.disabled = envelopeInput.value.trim().length === 0;
+});
+
+function startEnvelopeRound() {
+  sealedEnvelopes = [];
+  envelopePlayerIndex = 0;
+  showEnvelopeWrite();
+}
+
+function showEnvelopeWrite() {
+  envelopeInput.value = '';
+  envelopeChars.textContent = '0';
+  btnSealEnvelope.disabled = true;
+  envelopeWriterName.textContent = playerNames[envelopePlayerIndex] + ' — write your secret';
+  envelopeWriteModal.classList.add('visible');
+  envelopeInput.focus();
+}
+
+btnSealEnvelope.addEventListener('click', () => {
+  const msg = envelopeInput.value.trim();
+  if (!msg) return;
+  sealedEnvelopes.push({ from: playerNames[envelopePlayerIndex], message: msg });
+  envelopeWriteModal.classList.remove('visible');
+  envelopePlayerIndex++;
+
+  if (envelopePlayerIndex < state.numPlayers) {
+    // Show pass device screen
+    envelopePassName.textContent = 'Pass the device to ' + playerNames[envelopePlayerIndex];
+    envelopePassModal.classList.add('visible');
+  } else {
+    // All envelopes sealed — start the game
+    startLevel(selectedLevel);
+  }
+});
+
+btnEnvelopeReady.addEventListener('click', () => {
+  envelopePassModal.classList.remove('visible');
+  showEnvelopeWrite();
+});
+
+// ── Envelope Reveal ──
+function showEnvelopeReveal() {
+  envelopeCards.innerHTML = '';
+  let openedCount = 0;
+  btnEnvelopeContinue.style.display = 'none';
+
+  sealedEnvelopes.forEach((env, i) => {
+    const card = document.createElement('div');
+    card.className = 'envelope-card';
+    card.innerHTML = '<div class="ec-from">From ' + env.from + '</div><div class="ec-message">' + env.message + '</div>';
+    card.addEventListener('click', () => {
+      if (card.classList.contains('opened')) return;
+      card.classList.add('opening');
+      setTimeout(() => {
+        card.classList.remove('opening');
+        card.classList.add('opened');
+        openedCount++;
+        if (openedCount >= sealedEnvelopes.length) {
+          btnEnvelopeContinue.style.display = 'block';
+        }
+      }, 600);
+    });
+    envelopeCards.appendChild(card);
+  });
+
+  envelopeRevealModal.classList.add('visible');
+}
+
+btnEnvelopeContinue.addEventListener('click', () => {
+  envelopeRevealModal.classList.remove('visible');
+  // Now show end screen
+  endTitle.textContent = state._endTitle;
+  endScores.innerHTML = state._endScores;
+  showEndChecklist();
+  saveSessionIfEnabled();
+  endScreen.classList.add('visible');
+});
+
+// ═══ WILDFIRE ROUND ═══
+const TEMPTATION_AFTER_DARK_PROMPTS = [
+  "Slide close and murmur the one wicked thought that has been lingering on your mind tonight.",
+  "Describe a fantasy starring the two of you, make it vivid enough that they can almost feel it.",
+	"Let your lips wander somewhere unexpected… kiss them where you have never dared before.",
+	"Confess the exact moment today when your thoughts about them turned a little… sinful.",
+	"Show your partner how you would tempt them if tonight were the first night they ever laid eyes on you.",
+	"Tell them the one thing they do that makes your composure disappear instantly.",
+	"Revisit the steamiest moment you have shared… but this time, slow it down and savor every second.",
+	"Lean into their ear and whisper the one thing you have always wanted to say when the lights are low.",
+	"Paint a slow, delicious picture of how you want the rest of the night to unfold.",
+	"Say nothing, let your hands reveal the side of you they rarely get to see.",
+	"Tell your partner the three words that would make you completely weak in the knees right now.",
+	"Hold eye contact for 30 seconds… then tell them exactly what that tension made you feel.",
+	"Give them the kind of kiss that says everything you haven not put into words yet.",
+	"Share a secret desire you have kept tucked away… tonight, it finally gets to breathe.",
+];
+
+let usedWildfirePrompts = [];
+let wildfireRound = 0;
+const WILDFIRE_TOTAL = 5;
+
+const wildfireModal = document.querySelector('#wildfire-modal');
+const wildfirePromptModal = document.querySelector('#wildfire-prompt-modal');
+const wildfirePromptText = document.querySelector('#wildfire-prompt-text');
+const wildfireRoundCount = document.querySelector('#wildfire-round-count');
+const btnWildfireYes = document.querySelector('#btn-wildfire-yes');
+const btnWildfireNo = document.querySelector('#btn-wildfire-no');
+const btnWildfireDone = document.querySelector('#btn-wildfire-done');
+const btnWildfireSkip = document.querySelector('#btn-wildfire-skip');
+
+function getWildfirePrompt() {
+  if (usedWildfirePrompts.length >= TEMPTATION_AFTER_DARK_PROMPTS.length) usedWildfirePrompts = [];
+  const available = TEMPTATION_AFTER_DARK_PROMPTS.filter(p => !usedWildfirePrompts.includes(p));
+  const pick = available[Math.floor(Math.random() * available.length)];
+  usedWildfirePrompts.push(pick);
+  return pick;
+}
+
+function checkWildfire() {
+  // Only triggers if post-game rating is 8 or higher
+  if (state._postRating >= 8) {
+    wildfireModal.classList.add('visible');
+  } else {
+    proceedToEnvelopeReveal();
+  }
+}
+
+btnWildfireYes.addEventListener('click', () => {
+  wildfireModal.classList.remove('visible');
+  wildfireRound = 0;
+  // Red room background for wildfire
+  const scene = document.querySelector('#scene');
+  scene.style.backgroundImage = "url('" + LEVEL_BACKGROUNDS.wildfire + "')";
+  scene.style.opacity = '1';
+  scene.style.display = 'block';
+  scene.style.transition = 'opacity 1s ease';
+  showNextWildfirePrompt();
+});
+
+btnWildfireNo.addEventListener('click', () => {
+  wildfireModal.classList.remove('visible');
+  proceedToEnvelopeReveal();
+});
+
+function showNextWildfirePrompt() {
+  wildfireRound++;
+  if (wildfireRound > WILDFIRE_TOTAL) {
+    wildfirePromptModal.classList.remove('visible');
+    proceedToEnvelopeReveal();
+    return;
+  }
+  wildfireRoundCount.textContent = 'Round ' + wildfireRound + ' of ' + WILDFIRE_TOTAL;
+  wildfirePromptText.textContent = getWildfirePrompt();
+  wildfirePromptModal.classList.add('visible');
+}
+
+btnWildfireDone.addEventListener('click', showNextWildfirePrompt);
+btnWildfireSkip.addEventListener('click', showNextWildfirePrompt);
+
+function proceedToEnvelopeReveal() {
+  document.querySelector('#scene').style.transition = 'opacity 1.5s ease';
+  document.querySelector('#scene').style.opacity = '0';
+  if (sealedEnvelopes.length > 0) {
+    showEnvelopeReveal();
+  } else {
+    endTitle.textContent = state._endTitle;
+    endScores.innerHTML = state._endScores;
+    showEndChecklist();
+    saveSessionIfEnabled();
+    endScreen.classList.add('visible');
+  }
+}
+
 // ═══ CONNECTION CHECK-IN QUESTIONS ═══
 const CHECKIN_PRE_QUESTIONS = [
   "How connected do you feel to each other right now?",
@@ -834,6 +1084,15 @@ const LEVELS = [
       ['👀', '😂', 'Staring Contest']]}
   ];
 
+ const LEVEL_BACKGROUNDS = {
+  0: 'backyard_movie.png',
+  1: 'beach_oasis.png',
+  2: 'tropical_oasis.png',
+  3: 'campsite_under_stars.png',
+  4: 'backyard_movie.png',
+  wildfire: 'red_room.png'
+};
+
 let state = {
   numPlayers: 0,
   currentLevel: 0,
@@ -894,9 +1153,9 @@ const curYear = new Date().getFullYear();
 
 // skip if age gate is already verified
 try {
-  if (localStorage.getItem('en_age_verfied') === 'true') {
+  if (localStorage.getItem('en_age_verified') === 'true') {
     document.querySelector('#age-gate').classList.remove('visible');
-    document.querySelector('#setup-rules').classList.remove('visible');
+    document.querySelector('#setup-rules').classList.add('visible');
   }
 } catch (e) {}
 
@@ -1011,8 +1270,8 @@ document.querySelectorAll('#player-count-options .setup-btn').forEach(btn => {
     selectedCount = parseInt(btn.dataset.count);
     btnToLevel.disabled = false;
     // Build name inputs
-    const nameDiv = document.getElementById('player-names');
-    const nameInputs = document.getElementById('name-inputs');
+    const nameDiv = document.querySelector('#player-names');
+    const nameInputs = document.querySelector('#name-inputs');
     nameDiv.style.display = 'block';
     nameInputs.innerHTML = '';
     for (let i = 0; i < selectedCount; i++) {
@@ -1267,7 +1526,7 @@ btnCheckinPreNext.addEventListener('click', () => {
   state._preQ = checkinPreQ.textContent;
   state._preRating = sel ? parseInt(sel.dataset.val): 0;
   checkinPre.classList.remove('visible');
-  startLevel(selectedLevel);
+  startEnvelopeRound();
 });
 
 // ═══ DOM REFS ═══
@@ -1329,6 +1588,7 @@ function startLevel(li) {
     paused: false, 
     foundPairs: new Set(), 
     dateChecklist:[]
+
   });
 
   clearInterval(state.timerInterval);
@@ -1369,6 +1629,11 @@ function startLevel(li) {
   buildPlayerScores();
   buildMatchesPopup(lv.pairs);
   highlightActivePlayer();
+  // Swap background for this level
+  const scene = document.querySelector('#scene');
+  scene.style.backgroundImage = "url('" + LEVEL_BACKGROUNDS[li] + "')";
+  scene.style.opacity = '1';
+  scene.style.display = 'block';
 }
 
 function shuffle(a) {
@@ -1415,13 +1680,13 @@ function buildPlayerScores() {
 }
 function highlightActivePlayer() {
   for(let i = 0; i < state.numPlayers; i++) {
-    const e = document.querySelector ('#player-tag' + i);
+    const e = document.querySelector ('#player-tag-' + i);
     if(e)e.classList.toggle('active', i === state.currentPlayer);
   }
   phraseDisplay.textContent = playerNames[state.currentPlayer] + ',your turn!';
   phraseDisplay.style.color = 'var(--honey)';
   setTimeout(() => {
-    if (phraseDisplay.textContent.includes('your turn')) phraseDisplay = '';
+    if (phraseDisplay.textContent.includes('your turn')) phraseDisplay.textContent = '';
   }, 1800)
 }
 
@@ -1458,7 +1723,7 @@ function markMatchFound(pn) {
 }
 
 let matchesPinned = false;
-const pinBtn = document.getElementById('matches-popup-pin');
+const pinBtn = document.querySelector('#matches-popup-pin');
 
 matchesFab.addEventListener('click', () => {
   popupOpen = !popupOpen;
@@ -1773,6 +2038,8 @@ function showLevelEnd() {
   state.gameOver = true;
   clearInterval(state.timerInterval);
   gameArea.style.display = 'none';
+  document.querySelector('#scene').style.transition = 'opacity 1.5s ease';
+  document.querySelector('#scene').style.opacity = '0';
   gameFooter.style.display = 'none';
   matchesFab.classList.remove('show');
   safeWordFab.classList.remove('show');
@@ -1803,10 +2070,11 @@ btnCheckinPostNext.addEventListener('click', () => {
   state._postQ = checkinPostQ.textContent;
   state._postRating = sel ? parseInt(sel.dataset.val) : 0;
   checkinPost.classList.remove('visible');
-  endTitle.textContent = state._endTitle;
-  endScores.innerHTML = state._endScores;
+  checkWildfire();
+});
 
   // Date checklist for Dating level
+  function showEndChecklist() {
   const checklist = document.querySelector ('#date-checklist');
   const checklistItems = document.querySelector ('#date-checklist-items');
   if((state.currentLevel === 0 || state.currentLevel === 4) && state.dateChecklist.length > 0) {
@@ -1816,7 +2084,7 @@ btnCheckinPostNext.addEventListener('click', () => {
       row.className = 'date-item';
       row.setAttribute('role', 'checkbox');
       row.setAttribute('aria-checked', 'false');
-      row.innerHTML =`<div class="date-item-check">✓</div><div class="date-item-emoji">${item.emoji1}</div><div class="date-item-content"><div class="date-item-name">${item.name}</div><div class="date-item-discovery">💬 ${item.discovery}</div></div>`;
+      row.innerHTML ='<div class="date-item-check">✓</div><div class="date-item-emoji">' + item.emoji1 + '</div><div class="date-item-content"><div class="date-item-name">' + item.name + '</div><div class="date-item-discovery">💬' + item.discovery + '</div></div>';
       row.addEventListener('click', () => {
         const checked = row.classList.toggle('checked');
         row.setAttribute('aria-checked', checked ? 'true' : 'false');
@@ -1827,11 +2095,11 @@ btnCheckinPostNext.addEventListener('click', () => {
   } else {
     checklist.style.display = 'none';
   }
-
+  
   // Save session if opted in
   saveSessionIfEnabled();
   endScreen.classList.add('visible');
-});
+};
 
 document.querySelector('#btn-play-again').addEventListener('click', () => {
   // Same level, new board — skip rules, players, level select
@@ -1894,9 +2162,13 @@ function fullRestart() {
     deck: [],
     foundPairs: new Set(),
     paused: false,
-    dateChecklist: []
+    dateChecklist: [],
   };
 
+  sealedEnvelopes = [];
+  envelopePlayerIndex = 0;
+  usedWildfirePrompts = [];
+  wildfireRound = 0;
   selectedCount = 0;
   selectedLevel = -1;
   ageTimerStarted = false;
@@ -1914,6 +2186,11 @@ function fullRestart() {
   pauseModal.classList.remove('visible');
   memoryModal.classList.remove('visible');
   vulnModal.classList.remove('visible');
+  envelopeWriteModal.classList.remove('visible');
+  envelopePassModal.classList.remove('visible');
+  envelopeRevealModal.classList.remove('visible');
+  wildfireModal.classList.remove('visible');
+  wildfirePromptModal.classList.remove('visible');
   document.querySelector ('#pw-modal').classList.remove('visible');
   document.querySelector ('#purchase-modal').classList.remove('visible');
   checkinPre.classList.remove('visible');
@@ -1948,6 +2225,12 @@ try {
 } catch(e) {
   document.querySelector ('#age-gate').classList.add('visible');
  }
+  // Restore boudoir background
+  const scene = querySelector('#scene');
+  scene.style.backgroundImage = "url('boudoir-bg.png')";
+  scene.style.opacity = '1';
+  scene.style.display = 'block';
+  scene.style.transition = 'none';
 }
 
 // ═══ PRIVACY & DATA CONTROLS ═══
@@ -2097,114 +2380,100 @@ function generateEncryptedPDF(sessions, password) {
     let y = 20;
 
     function checkPage(need) {
-      if(y + need > 275) {
-        doc.addPage();
-        y = 20;
-      }
+      if (y + need > 275) { doc.addPage(); y = 20; }
     }
 
-    // Title page
+    // Build the plain text content first
+    let plainText = 'EXPLICITLY NAUGHTY — PRIVATE GAME JOURNAL\n';
+    plainText += 'Exported: ' + new Date().toLocaleString() + '\n';
+    plainText += 'Sessions: ' + sessions.length + '\n';
+    plainText += '════════════════════════════════\n\n';
+
+    sessions.forEach((s, idx) => {
+      const dt = new Date(s.date);
+      plainText += 'SESSION ' + (idx + 1) + ': ' + s.level.toUpperCase() + '\n';
+      plainText += dt.toLocaleDateString() + ' at ' + dt.toLocaleTimeString() + ' — ' + s.players + ' player' + (s.players > 1 ? 's' : '') + '\n';
+      const scoreStr = s.scores.map((sc, i) => 'Player ' + (i + 1) + ': ' + sc).join('  |  ');
+      plainText += 'Scores: ' + scoreStr + '  (' + s.matchedPairs + '/' + (s.totalPairs || '?') + ' pairs, ' + s.movesTaken + '/' + (s.maxMoves || '?') + ' moves)\n';
+      if (s.preCheckin && s.preCheckin.question) {
+        plainText += 'Pre-game: "' + s.preCheckin.question + '" — Rating: ' + s.preCheckin.rating + '/10\n';
+      }
+      if (s.postCheckin && s.postCheckin.question) {
+        plainText += 'Post-game: "' + s.postCheckin.question + '" — Rating: ' + s.postCheckin.rating + '/10\n';
+      }
+      if (s.checklist && s.checklist.length > 0) {
+        plainText += (s.level === 'Dating' ? 'Date Night Jar:\n' : 'Prompts & Moments:\n');
+        s.checklist.forEach(item => {
+          plainText += '  - ' + item.name + '\n';
+          if (item.discovery) plainText += '    "' + item.discovery + '"\n';
+        });
+      }
+      plainText += '\n════════════════════════════════\n\n';
+    });
+
+    // AES encrypt the content
+    const encrypted = CryptoJS.AES.encrypt(plainText, password).toString();
+
+    // Write the encrypted PDF
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.setTextColor(90, 20, 60);
-    doc.text('Explicitly Naughty',
-    pw / 2, y, {align:'center'}); y += 10;
+    doc.text('Explicitly Naughty', pw / 2, y, {align: 'center'}); y += 10;
     doc.setFontSize(11);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(120, 80, 100);
-    doc.text('Private Game Journal — Encrypted Export', pw / 2, y, {align: 'center'}); y += 6;
+    doc.text('Private Game Journal — AES-256 Encrypted', pw / 2, y, {align: 'center'}); y += 6;
     doc.setFontSize(8);
     doc.setTextColor(160, 130, 150);
-    doc.text(`Exported: ${new Date().toLocaleString()}`, pw / 2, y,{align:'center'}); y += 4;
-    doc.text(`Sessions: ${sessions.length}`, pw / 2, y, {align:'center'}); y+= 12;
+    doc.text('Exported: ' + new Date().toLocaleString(), pw / 2, y, {align: 'center'}); y += 4;
+    doc.text('Sessions: ' + sessions.length, pw / 2, y, {align: 'center'}); y += 12;
+    doc.setDrawColor(200, 160, 180);
+    doc.line(margin, y, pw - margin, y); y += 12;
+
+    // Instructions
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(90, 20, 60);
+    doc.text('This journal is encrypted.', pw / 2, y, {align: 'center'}); y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(120, 100, 110);
+    const instructions = [
+      'Your data is protected with AES-256 encryption.',
+      'To read it, visit: ' + window.location.origin + '/decrypt.html',
+      'Or use any AES decryption tool with your password.',
+      'Without the password, this content is unreadable.'
+    ];
+    instructions.forEach(line => {
+      doc.text(line, pw / 2, y, {align: 'center'}); y += 5;
+    });
+    y += 10;
     doc.setDrawColor(200, 160, 180);
     doc.line(margin, y, pw - margin, y); y += 10;
 
-    sessions.forEach((s, idx) => {
-      checkPage(60);
-      // Session header
-      doc.setFont('helvetica','bold');
-      doc.setFontSize(13);
-      doc.setTextColor(90, 20, 60);
-      doc.text(`Session ${idx+1}: ${s.level}`, margin, y); y += 6;
-      doc.setFont('helvetica','normal');
-      doc.setFontSize(9);
-      doc.setTextColor(100, 80, 90);
-      const dt = new Date(s.date);
-      doc.text(`${dt.toLocaleDateString()} at ${dt.toLocaleTimeString()} — ${s.players} player${s.players > 1 ? 's' : ''}`, margin, y); y += 6;
-
-      // Scores
-      doc.setFontSize(9);
-      doc.setTextColor(80, 60, 70);
-      const scoreStr = s.scores.map((sc, i) => `Player ${i + 1} : ${sc}`).join('  |  ');
-      doc.text(`Scores: ${scoreStr}   (${s.matchedPairs}/${s.totalPairsEl} pairs, ${s.movesTaken}/${s.maxMoves} moves)`, margin, y); y += 8;
-
-      // Check-ins
-      if(s.preCheckin.question) {
-        checkPage(14);
-        doc.setFont('helvetica', 'italic');
-        doc.setFontSize(8);
-        doc.setTextColor(140, 110, 130);
-        doc.text('Pre-game check-in:', margin, y); y += 4;
-        doc.setFont('helvetica','normal');
-const preLines = doc.splitTextToSize('"' + s.preCheckin.question + '" — Rating: ' + s.preCheckin.rating + '/10', maxW);        doc.text(preLines, margin, y);
-        y += preLines.length * 4 + 2;
-      }
-
-      if(s.postCheckin.question) {
-        checkPage(14);
-        doc.setFont('helvetica','italic');
-        doc.setFontSize(8);
-        doc.setTextColor(140, 110, 130);
-        doc.text('Post-game check-in:', margin, y); y += 4;
-        doc.setFont('helvetica','normal');
-const postLines = doc.splitTextToSize('"' + s.postCheckin.question + '" — Rating: ' + s.postCheckin.rating + '/10', maxW);        doc.text(postLines,margin,y);
-        y += postLines.length * 4 + 2;
-      }
-
-      // Checklist items
-      if(s.checklist && s.checklist.length > 0) {
-        checkPage(10);
-        doc.setFont('helvetica','bold');
-        doc.setFontSize(9);
-        doc.setTextColor(90, 20, 60);
-        doc.text(s.level === 'Dating' ? 'Date Night Jar:' : 'Prompts & Moments:', margin, y); y += 5;
-        s.checklist.forEach(item => {
-          checkPage(12);
-          doc.setFont('helvetica','normal');
-          doc.setFontSize(8.5);
-          doc.setTextColor(80, 60, 70);
-          doc.text('- ' + item.name, margin + 2, y);
-          if(item.discovery) {
-            doc.setFont('helvetica','italic');
-            doc.setFontSize(7.5)
-            doc.setTextColor(140, 110, 130);
-            const dLines = doc.splitTextToSize(`"${item.discovery}"`, maxW - 8);
-            doc.text(dLines, margin + 6, y); y += dLines.length * 3.5 + 2;
-          }
-        });
-      }
-
-      y += 4;
+    // Write encrypted blob in chunks
+    doc.setFont('courier', 'normal');
+    doc.setFontSize(5.5);
+    doc.setTextColor(100, 80, 100);
+    const chunkSize = 100;
+    for (let i = 0; i < encrypted.length; i += chunkSize) {
       checkPage(4);
-      doc.setDrawColor(220, 200, 210);
-      doc.line(margin, y, pw-margin, y);
-      y += 8;
-    });
+      doc.text(encrypted.substring(i, i + chunkSize), margin, y);
+      y += 3.5;
+    }
 
     // Footer
     checkPage(16);
-    doc.setFont('helvetica','italic');
+    y += 6;
+    doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
     doc.setTextColor(180, 160, 170);
-    doc.text('This document is password-protected. Keep it safe.', pw / 2, y,{align:'center'});
-    y += 4;
-    doc.text('Your data never left your device. This is yours.',pw / 2, y,{align:'center'});
+    doc.text('AES-256 encrypted. Unreadable without your password.', pw / 2, y, {align: 'center'}); y += 4;
+    doc.text('Your data never left your device. This is yours.', pw / 2, y, {align: 'center'});
 
-    // Encrypt and save
-    doc.save('explicitly-naughty-journal.pdf', {encryption:{userPassword: password,ownerPassword: password + '_owner', userPermissions: ['print']}});
+    doc.save('explicitly-naughty-journal.pdf');
     privacyStatus.textContent = '✓ Encrypted PDF exported — check your downloads';
-  } catch(e){
+  } catch(e) {
     console.error('PDF export error:', e);
     privacyStatus.textContent = '⚠ PDF export failed — try a different browser';
   }

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decrypt Your Journal — Explicitly Naughty</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+<style>
+  :root { --bg:#0D0614; --rose:#FF5C8A; --honey:#FFCA28; --blush:#FFE0EA; --muted:#D4A0BD; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family:'Quicksand',sans-serif; background:var(--bg); color:var(--blush);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .card {
+    background:rgba(22,14,34,0.85); border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px; padding:30px 24px; max-width:480px; width:100%; text-align:center;
+  }
+  h1 {
+    font-size:1.3rem; margin-bottom:6px;
+    background:linear-gradient(135deg, var(--rose), var(--honey));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  }
+  .sub { font-size:0.75rem; color:var(--muted); margin-bottom:20px; }
+  label { display:block; text-align:left; font-size:0.7rem; color:var(--muted); margin-bottom:4px; font-weight:700; }
+  textarea, input {
+    width:100%; box-sizing:border-box; padding:12px; border-radius:12px;
+    background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.1);
+    color:var(--blush); font-family:monospace; font-size:0.8rem; margin-bottom:12px;
+  }
+  textarea { height:120px; resize:vertical; }
+  input { text-align:center; font-family:'Quicksand',sans-serif; }
+  input:focus, textarea:focus { outline:none; border-color:var(--rose); }
+  button {
+    background:linear-gradient(135deg, var(--rose), #FF7B42); border:none; color:#0D0614;
+    padding:14px 36px; border-radius:30px; font-size:0.9rem; font-weight:700;
+    cursor:pointer; letter-spacing:1px; text-transform:uppercase; margin-top:8px;
+  }
+  button:disabled { opacity:0.3; }
+  .result {
+    margin-top:20px; text-align:left; white-space:pre-wrap; font-size:0.78rem;
+    color:var(--blush); line-height:1.7; max-height:50vh; overflow-y:auto;
+    padding:16px; border-radius:12px; background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.06); display:none;
+  }
+  .error { color:#FF5757; font-size:0.75rem; margin-top:8px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Decrypt Your Journal</h1>
+  <div class="sub">Paste the encrypted text from your PDF and enter your password.</div>
+  <label>Encrypted text (copy from PDF)</label>
+  <textarea id="encrypted" placeholder="Paste the encrypted block from your PDF here..."></textarea>
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Enter your password">
+  <button id="decrypt-btn" disabled>Decrypt</button>
+  <div class="error" id="error"></div>
+  <div class="result" id="result"></div>
+</div>
+<script>
+  const enc = document.getElementById('encrypted');
+  const pw = document.getElementById('password');
+  const btn = document.getElementById('decrypt-btn');
+  const result = document.getElementById('result');
+  const error = document.getElementById('error');
+
+  function checkReady() { btn.disabled = !(enc.value.trim() && pw.value.length >= 4); }
+  enc.addEventListener('input', checkReady);
+  pw.addEventListener('input', checkReady);
+
+  btn.addEventListener('click', () => {
+    error.textContent = '';
+    result.style.display = 'none';
+    try {
+      const cleaned = enc.value.trim().replace(/\s+/g, '');
+      const decrypted = CryptoJS.AES.decrypt(cleaned, pw.value);
+      const text = decrypted.toString(CryptoJS.enc.Utf8);
+      if (!text || text.length < 10) {
+        error.textContent = 'Wrong password or corrupted data. Try again.';
+        return;
+      }
+      result.textContent = text;
+      result.style.display = 'block';
+      error.textContent = '';
+    } catch(e) {
+      error.textContent = 'Decryption failed. Check your password and try again.';
+    }
+  });
+</script>
+</body>
+</html>
