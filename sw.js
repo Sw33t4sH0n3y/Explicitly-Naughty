@@ -5,8 +5,7 @@ const ASSETS = [
   './styles.css',
   './manifest.json',
   './logo-header.png',
-  './decrypt.html'
-
+  './decrypt.html',
 ];
 
 // Install — cache core assets

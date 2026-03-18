@@ -1089,7 +1089,7 @@ const LEVELS = [
   1: 'beach_oasis.png',
   2: 'tropical_oasis.png',
   3: 'campsite_under_stars.png',
-  4: 'backyard_movie.png',
+  4: 'adult_play.png',
   wildfire: 'red_room.png'
 };
 
@@ -1311,11 +1311,52 @@ const LEVEL_PRICES = [
 ];
 const BUNDLE_PRICE = '$7.99';
 
+const TRIAL_KEY = 'en_trial';
+const TRIAL_MAX_PER_LEVEL = 1;
+const TRIAL_MAX_PLAYERS = 2;
+
+function getTrialData() {
+  try {
+    const stored = localStorage.getItem(TRIAL_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch(e) {}
+  return { active: false, plays: {} };
+}
+
+function saveTrialData(data) {
+  try { localStorage.setItem(TRIAL_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function activateTrial() {
+  const trial = { active: true, plays: { 0:0, 1:0, 2:0, 3:0, 4:0 } };
+  saveTrialData(trial);
+  return trial;
+}
+
+function canPlayTrial(levelIdx) {
+  const trial = getTrialData();
+  if (!trial.active) return false;
+  return (trial.plays[levelIdx] || 0) < TRIAL_MAX_PER_LEVEL;
+}
+
+function useTrialPlay(levelIdx) {
+  const trial = getTrialData();
+  if (!trial.active) return;
+  trial.plays[levelIdx] = (trial.plays[levelIdx] || 0) + 1;
+  saveTrialData(trial);
+}
+
+function getTrialPlaysLeft(levelIdx) {
+  const trial = getTrialData();
+  if (!trial.active) return 0;
+  return TRIAL_MAX_PER_LEVEL - (trial.plays[levelIdx] || 0);
+}
+
 // Unlock codes — map code string to what it unlocks
 // 'all' unlocks everything, or array of level indices
 const UNLOCK_CODES = {
   'LOVEUNLOCKED':   'all',
-  'NAUGHTYALL':     'all',
+  'NAUGHTYALL':     'trial',
   'HONEYMOON':      [1],
   'COMMITTED':      [2],
   'MARRIED':        [3],
@@ -1434,6 +1475,9 @@ btnCodeApply.addEventListener('click', () => {
     if(target === 'all') {
       unlockAll();
       unlockStatus.textContent = '✨ All levels unlocked! Enjoy the full experience.';
+    } else if(target === 'trial') {
+      activateTrial();
+      unlockStatus.textContent = '✨ Trial activated! 1 free game per level for 2 players.';  
     } else {
       target.forEach(i => unlockLevel(i));
       unlockStatus.textContent = '✨ ' + target.map(i => LEVELS[i].name).join(', ') + 'unlocked!';
@@ -1470,13 +1514,16 @@ function buildLevelSelect() {
     card.setAttribute('aria-label', lv.name + ': ' + lv.desc + (isLocked ? ' (Locked)':''));
     let badge = '';
     if(idx === FREE_LEVEL) badge = '<div class="lc-free-tag">FREE</div>';
+    else if(isLocked && canPlayTrial(idx)) badge = '<div class="lc-free-tag">TRIAL</div>';
     else if(isLocked) badge = '<div class="lc-lock">🔒</div>';
     card.innerHTML = badge + '<div class="lc-icon">' + lv.icon + '</div><div class="lc-name">' + lv.name + '</div><div class="lc-desc">' + lv.desc + '</div>';
     card.addEventListener('click',() => {
       if(isLocked) { 
+        if(canPlayTrial(idx)) {
+          selectLevel(idx);
         showPurchaseModal(idx);
-       }
-      else { 
+        }
+       } else { 
         selectLevel(idx); 
       }
     });
@@ -1485,7 +1532,10 @@ function buildLevelSelect() {
       if(e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         if(isLocked){ 
-          showPurchaseModal(idx); 
+          if(canPlayTrial(idx)) {
+          selectLevel(idx);
+          showPurchaseModal(idx);
+          } 
         } else { 
           selectLevel(idx); 
         }
@@ -1510,6 +1560,23 @@ const checkinPre = document.querySelector('#checkin-pre'),
 
   btnStartGame.addEventListener('click', () => {
   if(selectedLevel < 0) return;
+
+  // Trial check — limit to 2 players
+  const trial = getTrialData();
+  const unlocked = getUnlockedLevels();
+  if(trial.active && !unlocked.has(selectedLevel)) {
+    if(selectedCount > TRIAL_MAX_PLAYERS) {
+      alert('Trial mode supports up to ' + TRIAL_MAX_PLAYERS + ' players. Unlock this level for more!');
+      return;
+    }
+    if(!canPlayTrial(selectedLevel)) {
+      alert('Trial used for this level! Unlock it to play again.');
+      buildLevelSelect();
+      return;
+    }
+    useTrialPlay(selectedLevel);
+  }
+  
   state.numPlayers = selectedCount;
   state.scores = Array(selectedCount).fill(0);
   document.querySelector('#setup-level').classList.remove('visible');
@@ -1683,11 +1750,11 @@ function highlightActivePlayer() {
     const e = document.querySelector ('#player-tag-' + i);
     if(e)e.classList.toggle('active', i === state.currentPlayer);
   }
-  phraseDisplay.textContent = playerNames[state.currentPlayer] + ',your turn!';
+  phraseDisplay.textContent = playerNames[state.currentPlayer] + ', your turn!';
   phraseDisplay.style.color = 'var(--honey)';
   setTimeout(() => {
     if (phraseDisplay.textContent.includes('your turn')) phraseDisplay.textContent = '';
-  }, 1800)
+  }, 1800);
 }
 
 function updateScoreDisplay() { 
@@ -2226,7 +2293,7 @@ try {
   document.querySelector ('#age-gate').classList.add('visible');
  }
   // Restore boudoir background
-  const scene = querySelector('#scene');
+  const scene = document.querySelector('#scene');
   scene.style.backgroundImage = "url('boudoir-bg.png')";
   scene.style.opacity = '1';
   scene.style.display = 'block';
@@ -2291,7 +2358,7 @@ function buildSessionData() {
     matchedPairs: state.matchedPairs,
     totalPairs: lv.pairs.length,
     movesTaken: state.movesTaken,
-    maxMovesEL: lv.maxMoves,
+    maxMoves: lv.maxMoves,
     preCheckin: {question: state._preQ || '',
     rating: state._preRating || 0},
     postCheckin: {question:state._postQ || '',
@@ -2322,6 +2389,7 @@ btnClear.addEventListener('click', () => {
     localStorage.removeItem(SAVE_PREF_KEY);
     localStorage.removeItem('en_player_names'); 
     localStorage.removeItem('en_age_verified'); 
+    localStorage.removeItem('TRIAL_KEY'); 
     playerNames = [];
     toggleSave.checked = false;
     privacyStatus.textContent = '✓ All data cleared';
@@ -2434,7 +2502,7 @@ function generateEncryptedPDF(sessions, password) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(90, 20, 60);
-    doc.text('This journal is encrypted.', pw / 2, y, {align: 'center'}); y += 6;
+    ('This journal is encrypted.', pw / 2, y, {align: 'center'}); y += 6;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(120, 100, 110);
