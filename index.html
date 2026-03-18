@@ -86,6 +86,50 @@
     <button class="btn-start" id="btn-rules-next" disabled>Next →</button>
   </div>
 
+  <!-- ═══ QUICK TUTORIAL ═══ -->
+<div id="setup-tutorial" class="setup-screen">
+  <div class="setup-heading">Quick Look</div>
+  <div class="setup-sub">Here's what a round looks like</div>
+  <div class="tutorial-steps">
+    <div class="tutorial-step">
+      <div class="tutorial-visual">
+        <div class="tutorial-card">🔥</div>
+        <div class="tutorial-card flipped">🫱</div>
+      </div>
+      <div class="tutorial-text"><b>1. Tap a card</b> to flip it and reveal an emoji</div>
+    </div>
+    <div class="tutorial-step">
+      <div class="tutorial-visual">
+        <div class="tutorial-card flipped">🫱</div>
+        <div class="tutorial-card flipped">🫲</div>
+      </div>
+      <div class="tutorial-text"><b>2. Tap a second</b> — if both emojis are from the same pair, it's a match!</div>
+    </div>
+    <div class="tutorial-step">
+      <div class="tutorial-visual">
+        <div class="tutorial-card matched">🫱</div>
+        <div class="tutorial-card matched">🫲</div>
+      </div>
+      <div class="tutorial-text"><b>3. Match found!</b> Act it out together or save it to your jar</div>
+    </div>
+    <div class="tutorial-step">
+      <div class="tutorial-visual">
+        <div class="tutorial-card">🔥</div>
+        <div class="tutorial-card">🔥</div>
+      </div>
+      <div class="tutorial-text"><b>No match?</b> Cards flip back. Remember where they are!</div>
+    </div>
+    <div class="tutorial-step">
+      <div class="tutorial-visual">
+        <div class="tutorial-card wild">🧠</div>
+      </div>
+      <div class="tutorial-text"><b>Wild cards</b> are hidden in the deck — flip one for a bonus prompt</div>
+    </div>
+    <div class="tutorial-tip">💡 Tap the 🃏 button during the game to see your match key</div>
+  </div>
+  <button class="btn-start" id="btn-tutorial-next">Got It →</button>
+</div>
+
   <!-- ═══ PLAYERS ═══ -->
   <div id="setup-players" class="setup-screen">
     <div class="step-indicator"><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div></div>
@@ -1247,6 +1291,17 @@ btnRulesNext.disabled = !consentCb.checked;
 btnRulesNext.addEventListener('click', () => {
   if (!consentCb.checked) return;
   document.querySelector('#setup-rules').classList.remove('visible');
+  // Show tutorial on first play, skip on repeat
+  if (localStorage.getItem('en_tutorial_seen')) {
+  document.querySelector('#setup-players').classList.add('visible');
+  } else {
+    document.querySelector('#setup-tutorial').classList.add('visible');
+  }
+});
+
+document.querySelector('#btn-tutorial-next').addEventListener('click', () => {
+  localStorage.setItem('en_tutorial_seen', 'true');
+  document.querySelector('#setup-tutorial').classList.remove('visible');
   document.querySelector('#setup-players').classList.add('visible');
 });
 
@@ -2265,6 +2320,7 @@ function fullRestart() {
   document.querySelector ('#setup-level').classList.remove('visible');
   document.querySelector ('#setup-players').classList.remove('visible');
   document.querySelector ('#setup-rules').classList.remove('visible');
+  document.querySelector ('#setup-tutorial').classList.remove('visible');
   document.querySelector ('#blocked-screen').classList.remove('visible');
   matchesFab.classList.remove('show');
   safeWordFab.classList.remove('show');
@@ -2390,6 +2446,7 @@ btnClear.addEventListener('click', () => {
     localStorage.removeItem('en_player_names'); 
     localStorage.removeItem('en_age_verified'); 
     localStorage.removeItem('TRIAL_KEY'); 
+    localStorage.removeItem('en_tutorial_seen'); 
     playerNames = [];
     toggleSave.checked = false;
     privacyStatus.textContent = '✓ All data cleared';

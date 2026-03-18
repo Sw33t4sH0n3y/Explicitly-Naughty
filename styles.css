@@ -2937,3 +2937,49 @@
 .btn-wildfire-done:active { 
   transform:scale(0.95); 
 }
+
+/* ── Tutorial ── */
+.tutorial-steps {
+  display:flex; flex-direction:column; gap:14px;
+  max-width:320px; width:100%; padding:4px 0;
+}
+.tutorial-step {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 14px; border-radius:14px;
+  background:var(--glass); border:1px solid var(--glass-border);
+  text-align:left;
+}
+.tutorial-visual {
+  display:flex; gap:4px; flex-shrink:0;
+}
+.tutorial-card {
+  width:36px; height:36px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:1rem;
+  background:var(--card-back);
+  border:1px solid rgba(255,255,255,0.06);
+}
+.tutorial-card.flipped {
+  background:rgba(255,92,138,0.12);
+  border-color:var(--rose);
+}
+.tutorial-card.matched {
+  background:rgba(255,202,40,0.15);
+  border-color:var(--honey);
+}
+.tutorial-card.wild {
+  background:rgba(199,125,255,0.15);
+  border-color:var(--electric);
+}
+.tutorial-text {
+  font-size:0.72rem; color:var(--blush); line-height:1.5;
+}
+.tutorial-text b {
+  color:var(--honey);
+}
+.tutorial-tip {
+  font-size:0.68rem; color:var(--muted); text-align:center;
+  padding:10px 14px; border-radius:10px;
+  background:rgba(255,202,40,0.06);
+  border:1px solid rgba(255,202,40,0.1);
+}
