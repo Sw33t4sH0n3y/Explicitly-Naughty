@@ -380,6 +380,8 @@
 </div>
 
 <button class="matches-fab" id="matches-fab" aria-label="View matches">🃏<span class="pin-dot"></span></button>
+<div class="match-bar" id="match-bar"></div>
+<button class="mb-toggle" id="mb-toggle" aria-label="Expand match key">↕</button>
 <button class="safe-word-fab" id="safe-word-fab" aria-label="Pause game">⏸ Pause</button>
 <div class="matches-popup" id="matches-popup" role="dialog" aria-label="Match reference">
   <div class="matches-popup-header">
@@ -1753,6 +1755,12 @@ function startLevel(li) {
   buildPlayerScores();
   buildMatchesPopup(lv.pairs);
   highlightActivePlayer();
+  buildMatchBar(lv.pairs);
+  matchBar.classList.add('show');
+  matchBar.classList.remove('expanded');
+  mbToggle.classList.add('show');
+  mbToggle.textContent = '↕';
+
   // Swap background for this level
   const scene = document.querySelector('#scene');
   scene.style.backgroundImage = "url('" + LEVEL_BACKGROUNDS[li] + "')";
@@ -1877,6 +1885,35 @@ document.addEventListener('click', e => {
     popupOpen = false;
     matchesPopup.classList.remove('visible');
   }
+});
+
+// ═══ ALWAYS-VISIBLE MATCH BAR ═══
+const matchBar = document.getElementById('match-bar');
+const mbToggle = document.getElementById('mb-toggle');
+
+function buildMatchBar(pairs) {
+  matchBar.innerHTML = '';
+  pairs.forEach((d, i) => {
+    const item = document.createElement('div');
+    item.className = 'mb-item';
+    item.id = 'mb-' + i;
+    item.innerHTML = '<span class="mb-emojis">' + d[0] + d[1] + '</span><span class="mb-name">' + d[2] + '</span>';
+    matchBar.appendChild(item);
+  });
+}
+
+function markMatchBar(pn) {
+  LEVELS[state.currentLevel].pairs.forEach((d, i) => {
+    if (d[2] === pn) {
+      const el = document.getElementById('mb-' + i);
+      if (el) el.classList.add('found');
+    }
+  });
+}
+
+mbToggle.addEventListener('click', () => {
+  matchBar.classList.toggle('expanded');
+  mbToggle.textContent = matchBar.classList.contains('expanded') ? '↔' : '↕';
 });
 
 // ═══ PAUSE ═══
@@ -2012,6 +2049,7 @@ function checkMatch() {
     matchedCount.textContent = state.matchedPairs;
     updateScoreDisplay();
     markMatchFound(m1);
+    markMatchBar(pn);
 
   if(!matchesPinned) {
     popupOpen = false;
@@ -2167,6 +2205,8 @@ function showLevelEnd() {
   gameFooter.style.display = 'none';
   matchesFab.classList.remove('show');
   safeWordFab.classList.remove('show');
+  matchBar.classList.remove('show');
+  mbToggle.classList.remove('show');
   popupOpen = false;
   matchesPopup.classList.remove('visible');
 
@@ -2326,6 +2366,9 @@ function fullRestart() {
   document.querySelector ('#blocked-screen').classList.remove('visible');
   matchesFab.classList.remove('show');
   safeWordFab.classList.remove('show');
+  matchBar.classList.remove('show');
+  matchBar.classList.remove('expanded');
+  mbToggle.classList.remove('show');
   popupOpen = false;
   matchesPopup.classList.remove('visible');
   document.querySelectorAll('#player-count-options .setup-btn').forEach(b => b.classList.remove('selected'));
