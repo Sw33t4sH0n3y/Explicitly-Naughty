@@ -2916,6 +2916,10 @@
 .btn-wildfire-done:active { 
   transform:scale(0.95); 
 }
+#wildfire-modal.visible,
+#wildfire-prompt-modal.visible {
+  background:rgba(6,2,12,0.4);
+}
 
 /* ── Tutorial ── */
 .tutorial-steps {
