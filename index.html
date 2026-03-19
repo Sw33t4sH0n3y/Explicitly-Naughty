@@ -934,24 +934,6 @@ function checkWildfire() {
   }
 }
 
-function getWildfirePrompt() {
-  if (usedWildfirePrompts.length >= TEMPTATION_AFTER_DARK_PROMPTS.length) usedWildfirePrompts = [];
-  const available = TEMPTATION_AFTER_DARK_PROMPTS.filter(p => !usedWildfirePrompts.includes(p));
-  const pick = available[Math.floor(Math.random() * available.length)];
-  usedWildfirePrompts.push(pick);
-  return pick;
-}
-
-function checkWildfire() {
-  if (state._postRating >= 8) {
-    wildfireModal.classList.add('visible');
-  } else {
-    proceedToEnvelopeReveal();
-  }
-}
-
-// ── NEW WILDFIRE FLOW (replace everything from here) ──
-
 let wildfireBusy = false;
 
 btnWildfireYes.onclick = () => {
