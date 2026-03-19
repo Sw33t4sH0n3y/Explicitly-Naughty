@@ -944,7 +944,7 @@ btnWildfireYes.addEventListener('click', () => {
   scene.style.display = 'block';
   scene.style.transition = 'none';
   scene.style.zIndex = '5';
-  showNextWildfirePrompt(400);
+  setTimeout(showNextWildfirePrompt, 400);
 });
 
 btnWildfireNo.addEventListener('click', () => {
