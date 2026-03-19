@@ -951,7 +951,7 @@ btnWildfireYes.onclick = () => {
   scene.style.opacity = '1';
   scene.style.display = 'block';
   scene.style.transition = 'none';
-  scene.style.zIndex = '5';
+  scene.style.zIndex = '0';
   setTimeout(() => {
     wildfireBusy = false;
     showNextWildfirePrompt();
@@ -965,19 +965,14 @@ btnWildfireNo.onclick = () => {
 
 function showNextWildfirePrompt() {
   wildfireRound++;
-  console.log('WILDFIRE: round', wildfireRound, 'of', WILDFIRE_TOTAL);
   if (wildfireRound > WILDFIRE_TOTAL) {
-    console.log('WILDFIRE: all done, proceeding');
     wildfirePromptModal.classList.remove('visible');
     proceedToEnvelopeReveal();
     return;
   }
   wildfireRoundCount.textContent = 'Round ' + wildfireRound + ' of ' + WILDFIRE_TOTAL;
   wildfirePromptText.textContent = getWildfirePrompt();
-  console.log('WILDFIRE: showing prompt modal');
   wildfirePromptModal.classList.add('visible');
-  console.log('WILDFIRE: modal visible?', wildfirePromptModal.classList.contains('visible'));
-  console.log('WILDFIRE: modal display', getComputedStyle(wildfirePromptModal).display);
 }
 
 btnWildfireDone.onclick = () => {
@@ -1004,7 +999,6 @@ btnWildfireSkip.onclick = () => {
 function proceedToEnvelopeReveal() {
   document.querySelector('#scene').style.transition = 'opacity 1.5s ease';
   document.querySelector('#scene').style.opacity = '0';
-  document.querySelector('#scene').style.zIndex = '0';
   if (sealedEnvelopes.length > 0) {
     showEnvelopeReveal();
   } else {
