@@ -964,14 +964,14 @@ function showNextWildfirePrompt() {
   wildfirePromptModal.classList.add('visible');
 }
 
-btnWildfireDone.addEventListener('click', () => {
+btnWildfireDone.onclick = () => {
   wildfirePromptModal.classList.remove('visible');
   setTimeout(showNextWildfirePrompt, 300);
-});
-btnWildfireSkip.addEventListener('click',() => {
+};
+btnWildfireSkip.onclick = () => {
   wildfirePromptModal.classList.remove('visible');
   setTimeout(showNextWildfirePrompt, 300);
-});
+};
 
 function proceedToEnvelopeReveal() {
   document.querySelector('#scene').style.transition = 'opacity 1.5s ease';
