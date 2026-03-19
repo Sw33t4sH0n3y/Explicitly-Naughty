@@ -934,23 +934,47 @@ function checkWildfire() {
   }
 }
 
-btnWildfireYes.addEventListener('click', () => {
+function getWildfirePrompt() {
+  if (usedWildfirePrompts.length >= TEMPTATION_AFTER_DARK_PROMPTS.length) usedWildfirePrompts = [];
+  const available = TEMPTATION_AFTER_DARK_PROMPTS.filter(p => !usedWildfirePrompts.includes(p));
+  const pick = available[Math.floor(Math.random() * available.length)];
+  usedWildfirePrompts.push(pick);
+  return pick;
+}
+
+function checkWildfire() {
+  if (state._postRating >= 8) {
+    wildfireModal.classList.add('visible');
+  } else {
+    proceedToEnvelopeReveal();
+  }
+}
+
+// ── NEW WILDFIRE FLOW (replace everything from here) ──
+
+let wildfireBusy = false;
+
+btnWildfireYes.onclick = () => {
+  if (wildfireBusy) return;
+  wildfireBusy = true;
   wildfireModal.classList.remove('visible');
   wildfireRound = 0;
-  // Red room background for wildfire
   const scene = document.querySelector('#scene');
   scene.style.backgroundImage = "url('" + LEVEL_BACKGROUNDS.wildfire + "')";
   scene.style.opacity = '1';
   scene.style.display = 'block';
   scene.style.transition = 'none';
   scene.style.zIndex = '5';
-  setTimeout(showNextWildfirePrompt, 400);
-});
+  setTimeout(() => {
+    wildfireBusy = false;
+    showNextWildfirePrompt();
+  }, 500);
+};
 
-btnWildfireNo.addEventListener('click', () => {
+btnWildfireNo.onclick = () => {
   wildfireModal.classList.remove('visible');
   proceedToEnvelopeReveal();
-});
+};
 
 function showNextWildfirePrompt() {
   wildfireRound++;
@@ -965,12 +989,23 @@ function showNextWildfirePrompt() {
 }
 
 btnWildfireDone.onclick = () => {
+  if (wildfireBusy) return;
+  wildfireBusy = true;
   wildfirePromptModal.classList.remove('visible');
-  setTimeout(showNextWildfirePrompt, 300);
+  setTimeout(() => {
+    wildfireBusy = false;
+    showNextWildfirePrompt();
+  }, 500);
 };
+
 btnWildfireSkip.onclick = () => {
+  if (wildfireBusy) return;
+  wildfireBusy = true;
   wildfirePromptModal.classList.remove('visible');
-  setTimeout(showNextWildfirePrompt, 300);
+  setTimeout(() => {
+    wildfireBusy = false;
+    showNextWildfirePrompt();
+  }, 500);
 };
 
 function proceedToEnvelopeReveal() {
