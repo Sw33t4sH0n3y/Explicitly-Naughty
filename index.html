@@ -10,7 +10,7 @@
 <meta name="description" content="A couples matching game — match it, act it out.">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="logo-header.png">
-<title>Explicitly Naughty</title>
+<title>Explicitly Naughty TEST 123</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="styles.css">
@@ -407,7 +407,7 @@
   // ═══ PEARL BACKGROUND + AUDIO ═══
 
 (function() {
-    const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const canvas = document.querySelector('#pearl-canvas');
   const ctx = canvas.getContext('2d');
   let width, height, strings = [];
@@ -926,10 +926,15 @@ function getWildfirePrompt() {
 }
 
 function checkWildfire() {
+  alert('checkWildfire called! Rating: ' + state._postRating);
   // Only triggers if post-game rating is 8 or higher
   if (state._postRating >= 8) {
+    alert('Rating is 8+, showing wildfire modal'); 
     wildfireModal.classList.add('visible');
+    alert('Modal has visible class: ' + wildfireModal.classList.contains('visible'));
+    alert('Modal display: ' + window.getComputedStyle(wildfireModal).display);
   } else {
+    alert('Rating too low, skipping wildfire');
     proceedToEnvelopeReveal();
   }
 }
@@ -960,17 +965,23 @@ btnWildfireNo.onclick = () => {
 
 function showNextWildfirePrompt() {
   wildfireRound++;
+  console.log('WILDFIRE: round', wildfireRound, 'of', WILDFIRE_TOTAL);
   if (wildfireRound > WILDFIRE_TOTAL) {
+    console.log('WILDFIRE: all done, proceeding');
     wildfirePromptModal.classList.remove('visible');
     proceedToEnvelopeReveal();
     return;
   }
   wildfireRoundCount.textContent = 'Round ' + wildfireRound + ' of ' + WILDFIRE_TOTAL;
   wildfirePromptText.textContent = getWildfirePrompt();
+  console.log('WILDFIRE: showing prompt modal');
   wildfirePromptModal.classList.add('visible');
+  console.log('WILDFIRE: modal visible?', wildfirePromptModal.classList.contains('visible'));
+  console.log('WILDFIRE: modal display', getComputedStyle(wildfirePromptModal).display);
 }
 
 btnWildfireDone.onclick = () => {
+  alert('Bring It clicked!');
   if (wildfireBusy) return;
   wildfireBusy = true;
   wildfirePromptModal.classList.remove('visible');
@@ -1676,6 +1687,7 @@ btnCheckinPreNext.addEventListener('click', () => {
   const sel = document.querySelector('#checkin-pre-scale  .checkin-btn.selected');
   state._preQ = checkinPreQ.textContent;
   state._preRating = sel ? parseInt(sel.dataset.val): 0;
+
   checkinPre.classList.remove('visible');
   startEnvelopeRound();
 });
@@ -2257,6 +2269,7 @@ btnCheckinPostNext.addEventListener('click', () => {
   const sel = document.querySelector('#checkin-post-scale .checkin-btn.selected');
   state._postQ = checkinPostQ.textContent;
   state._postRating = sel ? parseInt(sel.dataset.val) : 0;
+  alert('Post check-in clicked! Rating: ' + state._postRating);
   checkinPost.classList.remove('visible');
   checkWildfire();
 });
